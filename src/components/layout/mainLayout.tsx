@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, ExpandMore, ExpandLess } from '@mui/icons-ma
 const ResizablePanelsLayout = () => {
     const [leftPinned, setLeftPinned] = useState(true);
     const [rightPinned, setRightPinned] = useState(true);
-    const [bottomPinned, setBottomPinned] = useState(true);
+    const [leftBottomPinned, setLeftBottomPinned] = useState(true);
     const [centerBottomPinned, setCenterBottomPinned] = useState(true);
 
     const folderStructure = [
@@ -57,19 +57,19 @@ const ResizablePanelsLayout = () => {
                         </div>
                     </MosaicWindow>
                 );
-            case 'bottom':
+            case 'leftBottom':
                 return (
                     <MosaicWindow
-                        title="Bottom Panel"
-                        path={['bottom']}
+                        title="Left Bottom Panel"
+                        path={['leftBottom']}
                         additionalControls={
-                            <IconButton onClick={() => setBottomPinned(false)}>
+                            <IconButton onClick={() => setLeftBottomPinned(false)}>
                                 <ExpandMore />
                             </IconButton>
                         }
                     >
                         <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
-                            <h4>Bottom Panel</h4>
+                            <h4>Left Bottom Panel</h4>
                             <p>Additional content area...</p>
                         </div>
                     </MosaicWindow>
@@ -108,71 +108,76 @@ const ResizablePanelsLayout = () => {
     const mosaicStructure = useMemo(() => {
         let layout;
 
-        if (leftPinned && rightPinned && bottomPinned && centerBottomPinned) {
+        if (leftPinned && rightPinned && leftBottomPinned && centerBottomPinned) {
             layout = {
                 direction: 'row',
                 first: {
                     direction: 'column',
                     first: 'left',
-                    second: 'bottom',
+                    second: 'leftBottom',
                     splitPercentage: 70,
                 },
                 second: {
-                    direction: 'column',
+                    direction: 'row',
                     first: {
-                        direction: 'row',
+                        direction: 'column',
                         first: 'center',
-                        second: 'right',
-                        splitPercentage: 80,
+                        second: 'centerBottom',
+                        splitPercentage: 70,
                     },
-                    second: 'centerBottom',
-                    splitPercentage: 80,
+                    second: 'right',
+                    splitPercentage: 70,
                 },
                 splitPercentage: 20,
             };
-        } else if (leftPinned && !rightPinned && bottomPinned && centerBottomPinned) {
+        } else if (leftPinned && !rightPinned && leftBottomPinned && centerBottomPinned) {
             layout = {
-                direction: 'column',
-                first: {
-                    direction: 'row',
-                    first: 'left',
-                    second: 'center',
-                    splitPercentage: 80,
-                },
-                second: 'centerBottom',
-                splitPercentage: 80,
-            };
-        } else if (!leftPinned && rightPinned && bottomPinned && centerBottomPinned) {
-            layout = {
-                direction: 'column',
-                first: {
-                    direction: 'row',
+                direction: 'row',
+                first: 'left',
+                second: {
+                    direction: 'column',
                     first: 'center',
-                    second: 'right',
-                    splitPercentage: 80,
+                    second: 'centerBottom',
+                    splitPercentage: 70,
                 },
-                second: 'centerBottom',
                 splitPercentage: 80,
             };
-        } else if (leftPinned && rightPinned && !bottomPinned && centerBottomPinned) {
+        } else if (!leftPinned && rightPinned && leftBottomPinned && centerBottomPinned) {
+            layout = {
+                direction: 'row',
+                first: {
+                    direction: 'column',
+                    first: 'center',
+                    second: 'centerBottom',
+                    splitPercentage: 70,
+                },
+                second: 'right',
+                splitPercentage: 80,
+            };
+        } else if (leftPinned && rightPinned && !leftBottomPinned && centerBottomPinned) {
             layout = {
                 direction: 'row',
                 first: 'left',
                 second: {
                     direction: 'row',
-                    first: 'center',
+                    first: {
+                        direction: 'column',
+                        first: 'center',
+                        second: 'centerBottom',
+                        splitPercentage: 70,
+                    },
                     second: 'right',
-                    splitPercentage: 80,
+                    splitPercentage: 70,
                 },
                 splitPercentage: 20,
             };
-        } else if (leftPinned && rightPinned && bottomPinned && !centerBottomPinned) {
+        } else if (leftPinned && rightPinned && leftBottomPinned && !centerBottomPinned) {
             layout = {
                 direction: 'row',
                 first: {
                     direction: 'column',
                     first: 'left',
-                    second: 'bottom',
+                    second: 'leftBottom',
                     splitPercentage: 70,
                 },
                 second: 'center',
@@ -188,7 +193,7 @@ const ResizablePanelsLayout = () => {
         }
 
         return layout;
-    }, [leftPinned, rightPinned, bottomPinned, centerBottomPinned]);
+    }, [leftPinned, rightPinned, leftBottomPinned, centerBottomPinned]);
 
     return (
         <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
@@ -230,10 +235,10 @@ const ResizablePanelsLayout = () => {
                     </IconButton>
                 </Tooltip>
             )}
-            {!bottomPinned && (
-                <Tooltip title="Show Bottom Panel" placement="top">
+            {!leftBottomPinned && (
+                <Tooltip title="Show Left Bottom Panel" placement="top">
                     <IconButton
-                        onClick={() => setBottomPinned(true)}
+                        onClick={() => setLeftBottomPinned(true)}
                         style={{
                             position: 'fixed',
                             bottom: 10,
