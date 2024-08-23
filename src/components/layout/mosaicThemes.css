@@ -1,0 +1,27 @@
+/* mosaicThemes.css */
+.mosaic-container.blueprint {
+  --mosaic-background-color: #f5f8fa;
+  --mosaic-border-color: #dce4ed;
+  --mosaic-title-color: #394b59;
+  --mosaic-toolbar-color: #eef2f5;
+}
+
+.mosaic-container.blueprint-dark {
+  --mosaic-background-color: #293742;
+  --mosaic-border-color: #394b59;
+  --mosaic-title-color: #bfccd6;
+  --mosaic-toolbar-color: #394b59;
+}
+
+.mosaic-container .mosaic-window {
+  background-color: var(--mosaic-background-color);
+  border: 1px solid var(--mosaic-border-color);
+}
+
+.mosaic-container .mosaic-window-toolbar {
+  background-color: var(--mosaic-toolbar-color);
+}
+
+.mosaic-container .mosaic-window-title {
+  color: var(--mosaic-title-color);
+}
