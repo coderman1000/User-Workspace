@@ -25,7 +25,7 @@ Before running the application, ensure you have the following installed:
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/user-workspace.git
+git clone https://github.com/coderman1000/User-Workspace.git
 cd user-workspace
 ```
 
@@ -89,24 +89,6 @@ The application supports customizable themes. You can switch between available t
 ### Extensions
 
 The application is built to be extensible. You can add new components or modify existing ones by updating the corresponding files in the `/components` directory.
-
-## Directory Structure
-
-Here's an overview of the project's directory structure:
-
-```
-user-workspace/
-│
-├── public/                  # Static assets
-├── components/              # React components
-├── pages/                   # Next.js pages
-├── styles/                  # CSS/SASS styles
-├── utils/                   # Utility functions
-├── hooks/                   # Custom React hooks
-├── theme/                   # Theme configuration
-├── package.json             # Project dependencies and scripts
-└── README.md                # Project documentation
-```
 
 ## Contributing
 
