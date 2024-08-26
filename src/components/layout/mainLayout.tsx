@@ -115,7 +115,7 @@ const ResizablePanelsLayout = () => {
                     direction: 'column',
                     first: 'left',
                     second: 'leftBottom',
-                    splitPercentage: 70,
+                    splitPercentage: 65, // Reduced by 5%
                 },
                 second: {
                     direction: 'row',
@@ -126,7 +126,7 @@ const ResizablePanelsLayout = () => {
                         splitPercentage: 70,
                     },
                     second: 'right',
-                    splitPercentage: 70,
+                    splitPercentage: 60, // Reduced by 10%
                 },
                 splitPercentage: 20,
             };
@@ -178,7 +178,7 @@ const ResizablePanelsLayout = () => {
                     direction: 'column',
                     first: 'left',
                     second: 'leftBottom',
-                    splitPercentage: 70,
+                    splitPercentage: 65, // Reduced by 5%
                 },
                 second: 'center',
                 splitPercentage: 80,
