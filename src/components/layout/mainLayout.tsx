@@ -10,6 +10,8 @@ const ResizablePanelsLayout = () => {
     const [rightPinned, setRightPinned] = useState(true);
     const [leftBottomPinned, setLeftBottomPinned] = useState(true);
     const [centerBottomPinned, setCenterBottomPinned] = useState(true);
+    const [selectedFileName, setSelectedFileName] = useState(null);  // State to hold the selected file name
+
     const folderStructure = [
         {
             id: 'root',
@@ -108,7 +110,10 @@ const ResizablePanelsLayout = () => {
             ],
         },
     ];
-
+    const handleFileDoubleClick = (fileName) => {
+        setSelectedFileName(fileName);  // Set the selected file name
+        console.log('Double-clicked file:', fileName);  // Optionally log the selected file name
+    };
     const renderMosaicWindow = (id) => {
         switch (id) {
             case 'left':
@@ -123,7 +128,7 @@ const ResizablePanelsLayout = () => {
                         }
                     >
                         <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
-                            <TreeViewComponent folderStructure={folderStructure} />
+                            <TreeViewComponent folderStructure={folderStructure} onFileDoubleClick={handleFileDoubleClick} />
                         </div>
                     </MosaicWindow>
                 );
