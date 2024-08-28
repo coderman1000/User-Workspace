@@ -21,7 +21,9 @@ const CustomTreeItem = ({ node, onFileDoubleClick }) => {
                     itemId={nodes.id}
                     label={
                         <>
-                            {isFolder ? <FolderIcon sx={{ marginRight: 1 }} /> : <InsertDriveFileIcon sx={{ marginRight: 1 }} />}
+                            {isFolder ?
+                                <FolderIcon sx={{ color: '#FFD700', marginRight: 1 }} /> :
+                                <InsertDriveFileIcon sx={{ color: '#2196F3', marginRight: 1 }} />}
                             {nodes.name}
                         </>
                     }
@@ -34,22 +36,22 @@ const CustomTreeItem = ({ node, onFileDoubleClick }) => {
                     {isFolder ? (
                         <>
                             <MenuItem className="custom-context-menu-item" onClick={() => console.log(`Create File in ${nodes.name}`)}>
-                                <NoteAddIcon sx={{ marginRight: 1 }} /> Create File
+                                <NoteAddIcon sx={{ color: '#4CAF50', marginRight: 1 }} /> Create File
                             </MenuItem>
                             <MenuItem className="custom-context-menu-item" onClick={() => console.log(`Create Sub-Folder in ${nodes.name}`)}>
-                                <CreateNewFolderIcon sx={{ marginRight: 1 }} /> Create Sub-Folder
+                                <CreateNewFolderIcon sx={{ color: '#FF9800', marginRight: 1 }} /> Create Sub-Folder
                             </MenuItem>
                             <MenuItem className="custom-context-menu-item" onClick={() => console.log(`Delete ${nodes.name} and Contents`)}>
-                                <DeleteIcon sx={{ marginRight: 1 }} /> Delete Folder and Contents
+                                <DeleteIcon sx={{ color: '#F44336', marginRight: 1 }} /> Delete Folder and Contents
                             </MenuItem>
                         </>
                     ) : (
                         <>
                             <MenuItem className="custom-context-menu-item" onClick={() => console.log(`Open ${nodes.name}`)}>
-                                <OpenInBrowserIcon sx={{ marginRight: 1 }} /> Open
+                                <OpenInBrowserIcon sx={{ color: '#3F51B5', marginRight: 1 }} /> Open
                             </MenuItem>
                             <MenuItem className="custom-context-menu-item" onClick={() => console.log(`Delete ${nodes.name}`)}>
-                                <DeleteIcon sx={{ marginRight: 1 }} /> Delete
+                                <DeleteIcon sx={{ color: '#F44336', marginRight: 1 }} /> Delete
                             </MenuItem>
                         </>
                     )}
