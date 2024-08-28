@@ -68,7 +68,7 @@ const TreeViewComponent = ({ folderStructure, onFileDoubleClick }) => {
     return (
         <Box
             sx={{
-                maxHeight: 570,
+                height: 570,
                 overflowY: 'auto',
                 minWidth: 250,
                 padding: '10px',
