@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Mosaic, MosaicWindow } from 'react-mosaic-component';
 import 'react-mosaic-component/react-mosaic-component.css';
 import TreeViewComponent from './TreeViewComponent';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip, Tabs, Tab, Box } from '@mui/material';
 import { ChevronLeft, ChevronRight, ExpandMore, ExpandLess } from '@mui/icons-material';
 
 const ResizablePanelsLayout = () => {
@@ -11,6 +11,7 @@ const ResizablePanelsLayout = () => {
     const [leftBottomPinned, setLeftBottomPinned] = useState(true);
     const [centerBottomPinned, setCenterBottomPinned] = useState(true);
     const [selectedFileName, setSelectedFileName] = useState(null);  // State to hold the selected file name
+    const [rightTab, setRightTab] = useState(0); // State to manage the selected tab
 
     const folderStructure = [
         {
@@ -114,11 +115,17 @@ const ResizablePanelsLayout = () => {
         setSelectedFileName(fileName);  // Set the selected file name
         console.log('Double-clicked file:', fileName);  // Optionally log the selected file name
     };
+
+    const handleTabChange = (event, newValue) => {
+        setRightTab(newValue);
+    };
+
     const renderMosaicWindow = (id) => {
         switch (id) {
             case 'left':
                 return (
                     <MosaicWindow
+                        draggable={false}
                         title="Left Panel"
                         path={['left']}
                         additionalControls={
@@ -135,6 +142,7 @@ const ResizablePanelsLayout = () => {
             case 'right':
                 return (
                     <MosaicWindow
+                        draggable={false}
                         title="Right Panel"
                         path={['right']}
                         additionalControls={
@@ -143,15 +151,22 @@ const ResizablePanelsLayout = () => {
                             </IconButton>
                         }
                     >
-                        <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
-                            <h4>Right Panel</h4>
-                            <p>Content goes here...</p>
+                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                            <Tabs value={rightTab} onChange={handleTabChange} indicatorColor="primary" textColor="primary">
+                                <Tab label="Tab 1" />
+                                <Tab label="Tab 2" />
+                            </Tabs>
+                            <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+                                {rightTab === 0 && <div style={{ padding: '10px', height: '100%' }}>Content for Tab 1</div>}
+                                {rightTab === 1 && <div style={{ padding: '10px', height: '100%' }}>Content for Tab 2</div>}
+                            </Box>
                         </div>
                     </MosaicWindow>
                 );
             case 'leftBottom':
                 return (
                     <MosaicWindow
+                        draggable={false}
                         title="Left Bottom Panel"
                         path={['leftBottom']}
                         additionalControls={
@@ -169,6 +184,7 @@ const ResizablePanelsLayout = () => {
             case 'centerBottom':
                 return (
                     <MosaicWindow
+                        draggable={false}
                         title="Center Bottom Panel"
                         path={['centerBottom']}
                         additionalControls={
@@ -185,7 +201,7 @@ const ResizablePanelsLayout = () => {
                 );
             case 'center':
                 return (
-                    <MosaicWindow title="Center Panel" path={['center']}>
+                    <MosaicWindow title="Center Panel" path={['center']} draggable={false}>
                         <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
                             <h4>Center Panel</h4>
                             <p>Main content area...</p>
@@ -196,6 +212,7 @@ const ResizablePanelsLayout = () => {
                 return null;
         }
     };
+
 
     const mosaicStructure = useMemo(() => {
         let layout;
