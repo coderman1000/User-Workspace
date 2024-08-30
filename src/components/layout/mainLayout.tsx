@@ -189,7 +189,7 @@ const ResizablePanelsLayout = () => {
                         path={['centerBottom']}
                         additionalControls={
                             <IconButton onClick={() => setCenterBottomPinned(false)}>
-                                <ExpandLess />
+                                <ExpandMore />
                             </IconButton>
                         }
                     >
