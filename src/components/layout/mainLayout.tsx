@@ -1,8 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Mosaic, MosaicWindow } from 'react-mosaic-component';
 import 'react-mosaic-component/react-mosaic-component.css';
-import TreeViewComponent from './TreeViewComponent';
-import { IconButton, Tooltip, Tabs, Tab, Box } from '@mui/material';
+import { IconButton, Tooltip, Tabs, Tab, Box, Checkbox, List, ListItem, ListItemText } from '@mui/material';
 import { ChevronLeft, ChevronRight, ExpandMore, ExpandLess } from '@mui/icons-material';
 
 const ResizablePanelsLayout = () => {
@@ -10,114 +9,40 @@ const ResizablePanelsLayout = () => {
     const [rightPinned, setRightPinned] = useState(true);
     const [leftBottomPinned, setLeftBottomPinned] = useState(true);
     const [centerBottomPinned, setCenterBottomPinned] = useState(true);
-    const [selectedFileName, setSelectedFileName] = useState(null);  // State to hold the selected file name
-    const [rightTab, setRightTab] = useState(0); // State to manage the selected tab
+    const [selectedTable, setSelectedTable] = useState(null);
+    const [columns, setColumns] = useState([]);
+    const [rightTab, setRightTab] = useState(0);
 
-    const folderStructure = [
-        {
-            id: 'root',
-            name: 'Root Folder',
-            children: [
-                {
-                    id: 'child1',
-                    name: 'Folder 1',
-                    children: [
-                        { id: 'file1', name: 'File 1' },
-                        { id: 'file2', name: 'File 2' },
-                        {
-                            id: 'subfolder1',
-                            name: 'Subfolder 1',
-                            children: [
-                                { id: 'file3', name: 'File 3' },
-                                {
-                                    id: 'subsubfolder1',
-                                    name: 'Subfolder 1.1',
-                                    children: [
-                                        { id: 'file4', name: 'File 4' },
-                                        { id: 'file5', name: 'File 5' },
-                                    ],
-                                },
-                            ],
-                        },
-                    ],
-                },
-                {
-                    id: 'child2',
-                    name: 'Folder 2',
-                    children: [
-                        { id: 'file6', name: 'File 6' },
-                        {
-                            id: 'subfolder2',
-                            name: 'Subfolder 2',
-                            children: [
-                                { id: 'file7', name: 'File 7' },
-                                { id: 'file8', name: 'File 8' },
-                            ],
-                        },
-                        {
-                            id: 'subfolder3',
-                            name: 'Subfolder 3',
-                            children: [
-                                { id: 'file9', name: 'File 9' },
-                                {
-                                    id: 'subsubfolder2',
-                                    name: 'Subfolder 2.1',
-                                    children: [
-                                        { id: 'file10', name: 'File 10' },
-                                        { id: 'file11', name: 'File 11' },
-                                    ],
-                                },
-                            ],
-                        },
-                    ],
-                },
-                {
-                    id: 'child3',
-                    name: 'Folder 3',
-                    children: [
-                        {
-                            id: 'subfolder4',
-                            name: 'Subfolder 4',
-                            children: [
-                                { id: 'file12', name: 'File 12' },
-                                { id: 'file13', name: 'File 13' },
-                            ],
-                        },
-                        {
-                            id: 'subfolder5',
-                            name: 'Subfolder 5',
-                            children: [
-                                { id: 'file14', name: 'File 14' },
-                                {
-                                    id: 'subsubfolder3',
-                                    name: 'Subfolder 3.1',
-                                    children: [
-                                        { id: 'file15', name: 'File 15' },
-                                        { id: 'file16', name: 'File 16' },
-                                        {
-                                            id: 'subsubsubfolder1',
-                                            name: 'Subfolder 3.1.1',
-                                            children: [
-                                                { id: 'file17', name: 'File 17' },
-                                                { id: 'file18', name: 'File 18' },
-                                            ],
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                    ],
-                },
-            ],
-        },
-    ];
-    const handleFileDoubleClick = (fileName) => {
-        setSelectedFileName(fileName);  // Set the selected file name
-        console.log('Double-clicked file:', fileName);  // Optionally log the selected file name
-    };
+    useEffect(() => {
+        if (!selectedTable) {
+            fetch('http://localhost:5000/ABC/tables/')
+                .then((response) => response.json())
+                .then((data) => {
+                    setSelectedTable(data); // Set the tables data
+                })
+                .catch((error) => console.error('Error fetching tables:', error));
+        } else {
+            fetch(`http://localhost:5000/ABC/tables/${selectedTable}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    setColumns(data); // Set the columns data
+                })
+                .catch((error) => console.error('Error fetching columns:', error));
+        }
+    }, [selectedTable]);
 
     const handleTabChange = (event, newValue) => {
         setRightTab(newValue);
+    };
+
+    const handleTableSelect = (tableName) => {
+        setSelectedTable(tableName);
+        setColumns([]);
+    };
+
+    const handleColumnSelect = (column) => {
+        // Handle column selection logic here
+        console.log('Selected column:', column);
     };
 
     const renderMosaicWindow = (id) => {
@@ -135,7 +60,7 @@ const ResizablePanelsLayout = () => {
                         }
                     >
                         <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
-                            <TreeViewComponent folderStructure={folderStructure} onFileDoubleClick={handleFileDoubleClick} />
+                            <h4>Left Panel</h4>
                         </div>
                     </MosaicWindow>
                 );
@@ -176,8 +101,28 @@ const ResizablePanelsLayout = () => {
                         }
                     >
                         <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
-                            <h4>Left Bottom Panel</h4>
-                            <p>Additional content area...</p>
+                            {!selectedTable ? (
+                                <List>
+                                    {selectedTable.map((table, index) => (
+                                        <ListItem
+                                            button
+                                            key={index}
+                                            onClick={() => handleTableSelect(table.name)}
+                                        >
+                                            <ListItemText primary={table.name} />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            ) : (
+                                <List>
+                                    {columns.map((column, index) => (
+                                        <ListItem key={index}>
+                                            <Checkbox onChange={() => handleColumnSelect(column.name)} />
+                                            <ListItemText primary={column.name} />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            )}
                         </div>
                     </MosaicWindow>
                 );
@@ -213,7 +158,6 @@ const ResizablePanelsLayout = () => {
         }
     };
 
-
     const mosaicStructure = useMemo(() => {
         let layout;
 
@@ -224,7 +168,7 @@ const ResizablePanelsLayout = () => {
                     direction: 'column',
                     first: 'left',
                     second: 'leftBottom',
-                    splitPercentage: 70, // Reduced by 5%
+                    splitPercentage: 70,
                 },
                 second: {
                     direction: 'row',
@@ -235,7 +179,7 @@ const ResizablePanelsLayout = () => {
                         splitPercentage: 70,
                     },
                     second: 'right',
-                    splitPercentage: 80, // Reduced by 10%
+                    splitPercentage: 80,
                 },
                 splitPercentage: 20,
             };
@@ -246,7 +190,7 @@ const ResizablePanelsLayout = () => {
                     direction: 'column',
                     first: 'left',
                     second: 'leftBottom',
-                    splitPercentage: 70, // Reduced by 5%
+                    splitPercentage: 70,
                 },
                 second: {
                     direction: 'column',
@@ -254,7 +198,7 @@ const ResizablePanelsLayout = () => {
                     second: 'centerBottom',
                     splitPercentage: 70,
                 },
-                splitPercentage: 20, // Make the center and centerBottom occupy the evacuated space
+                splitPercentage: 20,
             };
         } else if (!leftPinned && rightPinned && leftBottomPinned && centerBottomPinned) {
             layout = {
@@ -292,13 +236,13 @@ const ResizablePanelsLayout = () => {
                     direction: 'column',
                     first: 'left',
                     second: 'leftBottom',
-                    splitPercentage: 65, // Adjusted as needed
+                    splitPercentage: 65,
                 },
                 second: {
                     direction: 'row',
-                    first: 'center', // Center window takes up the space
-                    second: 'right', // Right window remains in place
-                    splitPercentage: 80, // Adjusted to allocate space to the center window
+                    first: 'center',
+                    second: 'right',
+                    splitPercentage: 80,
                 },
                 splitPercentage: 20,
             };
@@ -360,9 +304,8 @@ const ResizablePanelsLayout = () => {
                         onClick={() => setLeftBottomPinned(true)}
                         style={{
                             position: 'fixed',
+                            left: 10,
                             bottom: 10,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
                             backgroundColor: '#ffffff',
                             boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
                             zIndex: 1000,
@@ -378,9 +321,9 @@ const ResizablePanelsLayout = () => {
                         onClick={() => setCenterBottomPinned(true)}
                         style={{
                             position: 'fixed',
+                            left: '50%',
                             bottom: 10,
-                            right: '50%',
-                            transform: 'translateX(50%)',
+                            transform: 'translateX(-50%)',
                             backgroundColor: '#ffffff',
                             boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
                             zIndex: 1000,
