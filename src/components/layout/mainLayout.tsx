@@ -169,11 +169,7 @@ const ResizablePanelsLayout = () => {
                         draggable={false}
                         title="Left Bottom Panel"
                         path={['leftBottom']}
-                        additionalControls={
-                            <IconButton onClick={() => setLeftBottomPinned(false)}>
-                                <ExpandMore />
-                            </IconButton>
-                        }
+
                     >
                         <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
                             <TableTreeView />
