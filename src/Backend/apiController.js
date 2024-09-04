@@ -137,7 +137,6 @@ exports.getFolderStructure = async (req, res) => {
 };
 
 // Getting tables and columns
-
 exports.getTableAndColumnNames = async (req, res) => {
   try {
     const dbName = req.params.dbName;
@@ -145,23 +144,25 @@ exports.getTableAndColumnNames = async (req, res) => {
     const collections = await db.db.listCollections().toArray();
 
     const result = await Promise.all(
-      collections.map(async (collection) => {
-        const collectionInfo = await db.collection(collection.name).findOne();
-        if (collectionInfo) {
-          const columns = Object.keys(collectionInfo).filter(
-            (column) => column !== "_id" && column !== "InsertedDateTime"
-          );
-          return {
-            tableName: collection.name,
-            columns: columns,
-          };
-        } else {
-          return {
-            tableName: collection.name,
-            columns: [],
-          };
-        }
-      })
+      collections
+        .filter((col) => col.name !== "folders") // Exclude "folders" collection
+        .map(async (collection) => {
+          const collectionInfo = await db.collection(collection.name).findOne();
+          if (collectionInfo) {
+            const columns = Object.keys(collectionInfo).filter(
+              (column) => column !== "_id" && column !== "InsertedDateTime"
+            );
+            return {
+              tableName: collection.name,
+              columns: columns,
+            };
+          } else {
+            return {
+              tableName: collection.name,
+              columns: [],
+            };
+          }
+        })
     );
 
     res.json(result);
@@ -169,6 +170,7 @@ exports.getTableAndColumnNames = async (req, res) => {
     common.handleError(res, error);
   }
 };
+
 exports.getColumnValuesByTimeInterval = async (req, res) => {
   try {
     const { dbName, collectionName, columns, startTime, endTime } = req.body;
