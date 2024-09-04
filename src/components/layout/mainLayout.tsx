@@ -13,104 +13,6 @@ const ResizablePanelsLayout = () => {
     const [selectedFileName, setSelectedFileName] = useState(null);  // State to hold the selected file name
     const [rightTab, setRightTab] = useState(0); // State to manage the selected tab
 
-    const folderStructure = [
-        {
-            id: 'root',
-            name: 'Root Folder',
-            children: [
-                {
-                    id: 'child1',
-                    name: 'Folder 1',
-                    children: [
-                        { id: 'file1', name: 'File 1' },
-                        { id: 'file2', name: 'File 2' },
-                        {
-                            id: 'subfolder1',
-                            name: 'Subfolder 1',
-                            children: [
-                                { id: 'file3', name: 'File 3' },
-                                {
-                                    id: 'subsubfolder1',
-                                    name: 'Subfolder 1.1',
-                                    children: [
-                                        { id: 'file4', name: 'File 4' },
-                                        { id: 'file5', name: 'File 5' },
-                                    ],
-                                },
-                            ],
-                        },
-                    ],
-                },
-                {
-                    id: 'child2',
-                    name: 'Folder 2',
-                    children: [
-                        { id: 'file6', name: 'File 6' },
-                        {
-                            id: 'subfolder2',
-                            name: 'Subfolder 2',
-                            children: [
-                                { id: 'file7', name: 'File 7' },
-                                { id: 'file8', name: 'File 8' },
-                            ],
-                        },
-                        {
-                            id: 'subfolder3',
-                            name: 'Subfolder 3',
-                            children: [
-                                { id: 'file9', name: 'File 9' },
-                                {
-                                    id: 'subsubfolder2',
-                                    name: 'Subfolder 2.1',
-                                    children: [
-                                        { id: 'file10', name: 'File 10' },
-                                        { id: 'file11', name: 'File 11' },
-                                    ],
-                                },
-                            ],
-                        },
-                    ],
-                },
-                {
-                    id: 'child3',
-                    name: 'Folder 3',
-                    children: [
-                        {
-                            id: 'subfolder4',
-                            name: 'Subfolder 4',
-                            children: [
-                                { id: 'file12', name: 'File 12' },
-                                { id: 'file13', name: 'File 13' },
-                            ],
-                        },
-                        {
-                            id: 'subfolder5',
-                            name: 'Subfolder 5',
-                            children: [
-                                { id: 'file14', name: 'File 14' },
-                                {
-                                    id: 'subsubfolder3',
-                                    name: 'Subfolder 3.1',
-                                    children: [
-                                        { id: 'file15', name: 'File 15' },
-                                        { id: 'file16', name: 'File 16' },
-                                        {
-                                            id: 'subsubsubfolder1',
-                                            name: 'Subfolder 3.1.1',
-                                            children: [
-                                                { id: 'file17', name: 'File 17' },
-                                                { id: 'file18', name: 'File 18' },
-                                            ],
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                    ],
-                },
-            ],
-        },
-    ];
     const handleFileDoubleClick = (fileName) => {
         setSelectedFileName(fileName);  // Set the selected file name
         console.log('Double-clicked file:', fileName);  // Optionally log the selected file name
@@ -135,7 +37,7 @@ const ResizablePanelsLayout = () => {
                         }
                     >
                         <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
-                            <TreeViewComponent folderStructure={folderStructure} onFileDoubleClick={handleFileDoubleClick} />
+                            <TreeViewComponent onFileDoubleClick={handleFileDoubleClick} />
                         </div>
                     </MosaicWindow>
                 );
