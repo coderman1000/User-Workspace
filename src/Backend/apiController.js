@@ -1,29 +1,53 @@
+const { MongoClient } = require("mongodb");
 const mongoose = require("mongoose");
+const GridFSBucket = require("mongodb").GridFSBucket;
 const common = require("./common");
 const Folder = require("./models/Folder");
 // Helper function to save folders recursively
-
 const saveFolderRecursive = async (node) => {
-  console.log(
-    `Attempting to save folder: ${node.name} with file_id: ${node.file_id}`
-  );
+  const bucket = new GridFSBucket(mongoose.connection.db, {
+    bucketName: "fileContents", // Specify the bucket name
+  });
+
+  const files =
+    node.files && Array.isArray(node.files)
+      ? await Promise.all(
+          node.files.map(async (file) => {
+            let contentId = null;
+
+            if (file.content) {
+              const uploadStream = bucket.openUploadStream(file.name);
+              await new Promise((resolve, reject) => {
+                uploadStream.end(Buffer.from(file.content, "utf-8"), (err) => {
+                  if (err) return reject(err);
+                  resolve();
+                });
+              });
+              contentId = uploadStream.id;
+            }
+
+            return {
+              file_id: file.file_id,
+              name: file.name,
+              contentId: contentId,
+            };
+          })
+        )
+      : [];
 
   const folder = new Folder({
     file_id: node.file_id,
     name: node.name,
-    files: node.files || [],
+    files: files,
     children: [],
   });
 
   const savedFolder = await folder.save();
-  console.log(
-    `Successfully saved folder: ${savedFolder.name} with file_id: ${savedFolder.file_id}`
-  );
 
   if (node.children && node.children.length > 0) {
     for (const child of node.children) {
       const savedChild = await saveFolderRecursive(child);
-      savedFolder.children.push(savedChild._id);
+      savedFolder.children.push(savedChild._id); // Reference by ObjectId
     }
     await savedFolder.save();
   }
@@ -35,21 +59,27 @@ exports.saveFolderStructure = async (req, res) => {
   try {
     const folderStructure = req.body;
 
+    // Ensure the collection exists
+    await mongoose.connection.db.createCollection("folders");
+
+    // Delete old folder structure
     await Folder.deleteMany({});
     console.log("Deleted old folder structure");
 
     for (const folder of folderStructure) {
       await saveFolderRecursive(folder);
-      console.log(`Folder structure saved successfully`);
+      console.log("Folder structure saved successfully");
     }
 
     res.status(201).send({ message: "Folder structure saved successfully!" });
   } catch (error) {
     console.error("Error saving folder structure:", error);
-    common.handleError(res, error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 const populateChildren = async (folder) => {
+  const bucket = new GridFSBucket(mongoose.connection.db);
+
   const populatedChildren = await Folder.find({
     _id: { $in: folder.children },
   }).populate("children");
@@ -58,22 +88,37 @@ const populateChildren = async (folder) => {
     populatedChildren[i] = await populateChildren(populatedChildren[i]);
   }
 
+  const files = await Promise.all(
+    folder.files.map(async (file) => {
+      let content = null;
+
+      if (file.contentId) {
+        const downloadStream = bucket.openDownloadStream(file.contentId);
+        const chunks = [];
+        for await (const chunk of downloadStream) {
+          chunks.push(chunk);
+        }
+        content = Buffer.concat(chunks).toString("utf-8");
+      }
+
+      return {
+        file_id: file.file_id,
+        name: file.name,
+        content: content,
+      };
+    })
+  );
+
   return {
-    file_id: folder.file_id, // Return file_id instead of _id
+    file_id: folder.file_id,
     name: folder.name,
-    files: folder.files.map((file) => ({
-      file_id: file.file_id, // Ensure file_id is returned for files as well
-      name: file.name,
-      content: file.content,
-    })),
+    files: files,
     children: populatedChildren,
   };
 };
 
 exports.getFolderStructure = async (req, res) => {
   try {
-    console.log("Fetching folder structure with root file_id");
-
     const rootFolder = await Folder.findOne({
       name: "Root Folder",
     }).populate("children");
@@ -90,6 +135,8 @@ exports.getFolderStructure = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Getting tables and columns
 
 exports.getTableAndColumnNames = async (req, res) => {
   try {
