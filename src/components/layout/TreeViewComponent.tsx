@@ -1,14 +1,42 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import Box from '@mui/material/Box';
 import CustomTreeItem from "./CustomTreeItem"; // Assuming CustomTreeItem is in a separate file
-
-
 import './custom-context-menu.css';
 
+const TreeViewComponent = ({ onFileDoubleClick }) => {
+    const [treeData, setTreeData] = useState([]);
 
-const TreeViewComponent = ({ folderStructure, onFileDoubleClick }) => {
-    const [treeData, setTreeData] = useState(folderStructure);
+    useEffect(() => {
+        // Fetch folder structure data from the API
+        const fetchFolderStructure = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/getFolderStructure');
+                const data = await response.json();
+                const formattedData = formatFolderStructure(data);
+                setTreeData(formattedData);
+            } catch (error) {
+                console.error('Error fetching folder structure:', error);
+            }
+        };
+
+        fetchFolderStructure();
+    }, []);
+
+    // Function to format the API response into the structure expected by the component
+    const formatFolderStructure = (data) => {
+        return data.map(item => ({
+            id: item.file_id,
+            name: item.name,
+            children: [
+                ...item.files.map(file => ({
+                    id: file.file_id,
+                    name: file.name,
+                })),
+                ...formatFolderStructure(item.children)
+            ]
+        }));
+    };
 
     const findNodeById = (nodes, id) => {
         for (let node of nodes) {
