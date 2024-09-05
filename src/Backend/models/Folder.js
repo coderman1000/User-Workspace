@@ -12,7 +12,7 @@ const folderSchema = new Schema({
     },
   ],
   children: [{ type: mongoose.Types.ObjectId, ref: "Folder" }],
+  parent: { type: mongoose.Types.ObjectId, ref: "Folder", default: null }, // Add parent field
 });
-
 const Folder = mongoose.model("Folder", folderSchema);
 module.exports = Folder;
