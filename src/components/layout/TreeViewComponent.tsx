@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import Box from '@mui/material/Box';
-import CustomTreeItem from "./CustomTreeItem"; // Assuming CustomTreeItem is in a separate file
+import CustomTreeItem from './CustomTreeItem'; // Assuming CustomTreeItem is in a separate file
 import './custom-context-menu.css';
 
 const TreeViewComponent = ({ onFileDoubleClick }) => {
@@ -13,8 +13,14 @@ const TreeViewComponent = ({ onFileDoubleClick }) => {
             try {
                 const response = await fetch('http://localhost:5000/api/getFolderStructure');
                 const data = await response.json();
-                const formattedData = formatFolderStructure(data);
-                setTreeData(formattedData);
+
+                // Ensure the response is an object and structure it properly
+                if (data && typeof data === 'object') {
+                    const formattedData = formatFolderStructure([data]); // The API returns the root folder
+                    setTreeData(formattedData);
+                } else {
+                    console.error('API response is not an object:', data);
+                }
             } catch (error) {
                 console.error('Error fetching folder structure:', error);
             }
@@ -23,19 +29,26 @@ const TreeViewComponent = ({ onFileDoubleClick }) => {
         fetchFolderStructure();
     }, []);
 
-    // Function to format the API response into the structure expected by the component
-    const formatFolderStructure = (data) => {
-        return data.map(item => ({
-            id: item.file_id,
-            name: item.name,
-            children: [
-                ...item.files.map(file => ({
-                    id: file.file_id,
-                    name: file.name,
-                })),
-                ...formatFolderStructure(item.children)
-            ]
-        }));
+    // Recursive function to format folder and files into a proper tree structure
+    const formatFolderStructure = (data, parentId = '') => {
+        return data.map((item, index) => {
+            const uniqueId = parentId ? `${parentId}-${index}` : `root-${index}`;
+
+            return {
+                id: uniqueId,  // Ensure unique IDs by prefixing with parent ID and index
+                name: item.name,
+                fileId: item.file_id, // Keep the file_id for reference
+                children: [
+                    ...(item.files?.map((file, fileIndex) => ({
+                        id: `${uniqueId}-file-${fileIndex}`, // Ensure unique file IDs
+                        name: file.name,
+                        fileId: file.file_id,
+                        isFile: true, // Flag to differentiate between files and folders
+                    })) || []),
+                    ...(item.children?.length ? formatFolderStructure(item.children, uniqueId) : []), // Recursively format subfolders
+                ],
+            };
+        });
     };
 
     const findNodeById = (nodes, id) => {
