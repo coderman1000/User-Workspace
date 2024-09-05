@@ -1,20 +1,18 @@
 const mongoose = require("mongoose");
-const { GridFSBucket } = require("mongodb");
+const { Schema } = mongoose;
 
-// File schema to store metadata
-const fileSchema = new mongoose.Schema({
-  file_id: { type: String, required: true, unique: true },
+const folderSchema = new Schema({
+  file_id: { type: String, required: true },
   name: { type: String, required: true },
-  contentId: { type: mongoose.Schema.Types.ObjectId }, // GridFS file ID
-});
-
-const folderSchema = new mongoose.Schema({
-  file_id: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  files: [fileSchema],
-  children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Folder" }], // Reference to child folders
+  files: [
+    {
+      file_id: { type: String, required: true },
+      name: { type: String, required: true },
+      contentId: { type: mongoose.Types.ObjectId }, // Reference to GridFS
+    },
+  ],
+  children: [{ type: mongoose.Types.ObjectId, ref: "Folder" }],
 });
 
 const Folder = mongoose.model("Folder", folderSchema);
-
 module.exports = Folder;
