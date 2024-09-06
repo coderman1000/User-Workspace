@@ -5,43 +5,48 @@ import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import FolderIcon from '@mui/icons-material/Folder';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { MosaicWindow } from 'react-mosaic-component';
 import { styled } from '@mui/material/styles';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Paper from '@mui/material/Paper';
 
 const SearchContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     backgroundColor: theme.palette.background.paper,
-    padding: '2px 4px',
+    padding: '6px 12px',
     borderRadius: theme.shape.borderRadius,
     boxShadow: theme.shadows[1],
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(2),
+    border: `1px solid ${theme.palette.divider}`,
 }));
 
 const ScrollableTreeView = styled(SimpleTreeView)(({ theme }) => ({
-    maxHeight: '170px', // Increased height for better usability
+    maxHeight: '200px',
     overflowY: 'auto',
+    padding: theme.spacing(1),
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[1],
+    backgroundColor: theme.palette.background.default,
     '& .MuiTreeItem-root': {
         '&:hover > .MuiTreeItem-content': {
             backgroundColor: theme.palette.action.hover,
         },
+        '& .MuiTreeItem-label': {
+            paddingLeft: theme.spacing(1),
+        },
     },
-}));
-
-const HighlightedLabel = styled('span')(({ theme }) => ({
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    padding: '0 1px',
-    borderRadius: '4px',
 }));
 
 const LabelContainer = styled(Box)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
 }));
+
 
 const TableTreeView = () => {
     const [tables, setTables] = useState([]);
@@ -111,7 +116,6 @@ const TableTreeView = () => {
     const renderTreeItems = (nodes) => (
         nodes.map((node, index) => {
             const tableId = `table-${index}`;
-            const hasMatchingColumns = node.columns.some(col => col.toLowerCase().includes(searchQuery));
             return (
                 <TreeItem
                     key={tableId}
@@ -124,7 +128,6 @@ const TableTreeView = () => {
                 >
                     {node.columns.map((col, colIndex) => {
                         const columnId = `col-${index}-${colIndex}`;
-                        const isMatched = col.toLowerCase().includes(searchQuery);
                         return (
                             <TreeItem
                                 key={columnId}
@@ -150,10 +153,9 @@ const TableTreeView = () => {
     );
 
     return (
-
-        <Box sx={{ minHeight: 150, minWidth: 300, padding: '15px' }}>
+        <Box sx={{ minHeight: 200, minWidth: 350, padding: '20px' }}>
             <SearchContainer>
-                <SearchIcon />
+                <SearchIcon sx={{ marginRight: 1 }} />
                 <InputBase
                     placeholder="Search tables or columns..."
                     inputProps={{ 'aria-label': 'search' }}
@@ -170,21 +172,8 @@ const TableTreeView = () => {
             >
                 {renderTreeItems(filterTables(tables))}
             </ScrollableTreeView>
-            <Box mt={2}>
-                <Typography variant="h6">Selected Columns:</Typography>
-                {selectedColumns.length > 0 ? (
-                    <ul>
-                        {selectedColumns.map(id => {
-                            const [_, tableIdx, colIdx] = id.split('-');
-                            const table = tables[tableIdx];
-                            const columnName = table ? table.columns[colIdx] : 'Unknown';
-                            return <li key={id}>{`${table?.tableName || 'Unknown Table'}: ${columnName}`}</li>;
-                        })}
-                    </ul>
-                ) : (
-                    <Typography variant="body2">No columns selected.</Typography>
-                )}
-            </Box>
+
+
         </Box>
     );
 };
