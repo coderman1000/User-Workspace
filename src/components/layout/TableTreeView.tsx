@@ -47,6 +47,19 @@ const LabelContainer = styled(Box)(({ theme }) => ({
     alignItems: 'center',
 }));
 
+const HighlightedLabel = styled('span')(({ theme }) => ({
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    padding: '0 4px',
+    borderRadius: theme.shape.borderRadius,
+}));
+
+const SelectedColumnsContainer = styled(Paper)(({ theme }) => ({
+    marginTop: theme.spacing(2),
+    padding: theme.spacing(2),
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.shadows[2],
+}));
 
 const TableTreeView = () => {
     const [tables, setTables] = useState([]);
@@ -173,7 +186,25 @@ const TableTreeView = () => {
                 {renderTreeItems(filterTables(tables))}
             </ScrollableTreeView>
 
-
+            <SelectedColumnsContainer>
+                <Typography variant="h6">Selected Columns:</Typography>
+                {selectedColumns.length > 0 ? (
+                    <List>
+                        {selectedColumns.map(id => {
+                            const [_, tableIdx, colIdx] = id.split('-');
+                            const table = tables[tableIdx];
+                            const columnName = table ? table.columns[colIdx] : 'Unknown';
+                            return (
+                                <ListItem key={id}>
+                                    <ListItemText primary={`${table?.tableName || 'Unknown Table'}: ${columnName}`} />
+                                </ListItem>
+                            );
+                        })}
+                    </List>
+                ) : (
+                    <Typography variant="body2">No columns selected.</Typography>
+                )}
+            </SelectedColumnsContainer>
         </Box>
     );
 };
