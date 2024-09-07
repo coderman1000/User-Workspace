@@ -1,6 +1,63 @@
 const mongoose = require("mongoose");
 const GridFSBucket = require("mongodb").GridFSBucket;
 const Folder = require("./models/Folder");
+const { connectToDb } = require("./common");
+
+// Get folder structure
+exports.getFolderStructure = async (req, res) => {
+  try {
+    const db = await connectToDb();
+
+    // Fetch the root folder (assuming only one root folder exists)
+    const rootFolder = await Folder.findOne({ parent: null })
+      .select("-__v")
+      .exec();
+
+    if (!rootFolder) {
+      return res.status(404).json({ message: "No folder structure found" });
+    }
+
+    // Build the folder tree starting from the root
+    const folderTree = await buildFolderTree(rootFolder);
+
+    res.status(200).json(folderTree);
+  } catch (error) {
+    console.error("Error fetching folder structure:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Helper to recursively build folder tree
+const buildFolderTree = async (folder) => {
+  try {
+    const cleanedFolder = folder.toObject();
+    cleanedFolder.files = cleanedFolder.files || [];
+
+    // Map files with contentId
+    cleanedFolder.files = cleanedFolder.files.map((file) => ({
+      file_id: file.file_id,
+      name: file.name,
+      contentId: file.contentId,
+    }));
+
+    if (folder.children && folder.children.length > 0) {
+      const childFolders = await Folder.find({ _id: { $in: folder.children } })
+        .select("-__v")
+        .exec();
+
+      cleanedFolder.children = await Promise.all(
+        childFolders.map(async (child) => await buildFolderTree(child))
+      );
+    } else {
+      cleanedFolder.children = [];
+    }
+
+    return cleanedFolder;
+  } catch (error) {
+    console.error("Error building folder tree:", error);
+    throw new Error("Failed to build folder tree");
+  }
+};
 
 // Save folder structure
 exports.saveFolderStructure = async (req, res) => {
