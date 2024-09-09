@@ -58,15 +58,7 @@ const CustomTreeItem = ({
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={handleKeyPress}
               onBlur={handleBlur}
-              style={{
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                padding: "4px",
-                width: "80%",
-                fontSize: "14px",
-                outline: "none",
-                boxShadow: "0 0 2px rgba(0, 0, 0, 0.2)",
-              }}
+              style={{ border: "1px solid #ccc", borderRadius: "4px", padding: "4px", width: "80%", fontSize: "14px", outline: "none", boxShadow: "0 0 2px rgba(0, 0, 0, 0.2)" }}
               autoFocus
             />
           ) : (
@@ -74,15 +66,13 @@ const CustomTreeItem = ({
               {isFolder ? (
                 <FolderIcon sx={{ color: "#FFD700", marginRight: 1 }} />
               ) : (
-                <InsertDriveFileIcon
-                  sx={{ color: "#2196F3", marginRight: 1 }}
-                />
+                <InsertDriveFileIcon sx={{ color: "#2196F3", marginRight: 1 }} />
               )}
               {node.name}
             </>
           )
         }
-        onDoubleClick={() => !isFolder && onFileDoubleClick(node.name)}
+        onDoubleClick={() => !isFolder && onFileDoubleClick(node.fileId, node.name)}
       >
         {isFolder &&
           node.children.map((childNode) => (
