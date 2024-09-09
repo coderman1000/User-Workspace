@@ -91,12 +91,14 @@ const saveFolderRecursive = async (node, db) => {
       if (file.content) {
         const uploadStream = bucket.openUploadStream(file.name);
         uploadStream.end(Buffer.from(file.content, "utf-8"));
-        contentId = uploadStream.id;
+        contentId = uploadStream.id; // Save the contentId
+        console.log(contentId);
       }
 
       return {
         file_id: file.file_id,
         name: file.name,
+        contentId: contentId, // Include contentId in the saved file
       };
     })
   );
