@@ -123,103 +123,50 @@ const saveFolderRecursive = async (node, db) => {
   return savedFolder; // Return the folder, including children _id references
 };
 
-exports.updateFolderOrFile = async (req, res) => {
+// Retrieve the contents of a file by its `contentId`
+// Method to retrieve file content based on file_id
+exports.getFileContent = async (req, res) => {
   try {
-    const { file_id, name, content } = req.body;
+    const { file_id } = req.query;
+    const db = await connectToDb();
 
-    let folder = await Folder.findOne({ "files.file_id": file_id });
+    // Find the file with the given file_id in the folder structure
+    const folder = await Folder.findOne({ "files.file_id": file_id });
 
-    if (folder) {
-      let file = folder.files.id(file_id);
-      if (name) file.name = name;
-
-      if (content) {
-        const db = mongoose.connection.db;
-        const bucket = new GridFSBucket(db);
-        const uploadStream = bucket.openUploadStream(file.name);
-        uploadStream.end(Buffer.from(content, "utf-8"));
-        file.contentId = uploadStream.id;
-      }
-
-      await folder.save();
-    } else {
-      folder = await Folder.findOne({ file_id });
-      if (folder && name) {
-        folder.name = name;
-        await folder.save();
-      }
+    if (!folder) {
+      return res.status(404).json({ message: "File not found" });
     }
 
-    res.status(200).json({ message: "Update successful!" });
+    // Find the file object inside the folder
+    const file = folder.files.find((f) => f.file_id === file_id);
+
+    if (!file || !file.contentId) {
+      return res.status(404).json({ message: "File content not found" });
+    }
+
+    const bucket = new GridFSBucket(db);
+
+    // Stream the file content from GridFS
+    const downloadStream = bucket.openDownloadStream(file.contentId);
+
+    let fileData = "";
+    downloadStream.on("data", (chunk) => {
+      fileData += chunk;
+    });
+
+    downloadStream.on("end", () => {
+      res.status(200).send({ content: fileData });
+    });
+
+    downloadStream.on("error", (err) => {
+      console.error("Error reading file content:", err);
+      res.status(500).json({ message: "Error retrieving file content" });
+    });
   } catch (error) {
-    console.error("Error updating folder/file:", error);
+    console.error("Error fetching file content:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-exports.deleteFolderOrFile = async (req, res) => {
-  try {
-    const { file_id } = req.params;
-
-    const folder = await Folder.findOneAndDelete({ file_id });
-    if (folder) {
-      return res.status(200).json({ message: "Folder deleted successfully!" });
-    }
-
-    const parentFolder = await Folder.findOne({ "files.file_id": file_id });
-    if (parentFolder) {
-      parentFolder.files.id(file_id).remove();
-      await parentFolder.save();
-      return res.status(200).json({ message: "File deleted successfully!" });
-    }
-
-    res.status(404).json({ message: "File/Folder not found!" });
-  } catch (error) {
-    console.error("Error deleting folder/file:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-// Getting tables and columns
-exports.getTableAndColumnNames = async (req, res) => {
-  try {
-    const dbName = req.params.dbName;
-    const db = mongoose.connection.useDb(dbName);
-    const collections = await db.db.listCollections().toArray();
-
-    const result = await Promise.all(
-      collections
-        .filter(
-          (col) =>
-            col.name !== "folders" &&
-            col.name !== "fs.chunks" &&
-            col.name !== "fs.files"
-        ) // Exclude "folders" collection
-        .map(async (collection) => {
-          const collectionInfo = await db.collection(collection.name).findOne();
-          if (collectionInfo) {
-            const columns = Object.keys(collectionInfo).filter(
-              (column) => column !== "_id" && column !== "InsertedDateTime"
-            );
-            return {
-              tableName: collection.name,
-              columns: columns,
-            };
-          } else {
-            return {
-              tableName: collection.name,
-              columns: [],
-            };
-          }
-        })
-    );
-
-    res.json(result);
-  } catch (error) {
-    common.handleError(res, error);
-  }
-};
-
 exports.getColumnValuesByTimeInterval = async (req, res) => {
   try {
     const { dbName, collectionName, columns, startTime, endTime } = req.body;
