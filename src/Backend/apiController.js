@@ -2,13 +2,13 @@ const mongoose = require("mongoose");
 const GridFSBucket = require("mongodb").GridFSBucket;
 const Folder = require("./models/Folder");
 const { connectToDb } = require("./common");
-
-// Get folder structure
+// Updated getFolderStructure method
+// Updated getFolderStructure method
 exports.getFolderStructure = async (req, res) => {
   try {
     const db = await connectToDb();
 
-    // Fetch the root folder (assuming only one root folder exists)
+    // Find the root folder (assuming there's only one root folder)
     const rootFolder = await Folder.findOne({ parent: null })
       .select("-__v")
       .exec();
@@ -17,7 +17,7 @@ exports.getFolderStructure = async (req, res) => {
       return res.status(404).json({ message: "No folder structure found" });
     }
 
-    // Build the folder tree starting from the root
+    // Recursively build the folder tree starting from the root folder
     const folderTree = await buildFolderTree(rootFolder);
 
     res.status(200).json(folderTree);
@@ -27,39 +27,38 @@ exports.getFolderStructure = async (req, res) => {
   }
 };
 
-// Helper to recursively build folder tree
+// Helper function to recursively build folder tree
 const buildFolderTree = async (folder) => {
-  try {
-    const cleanedFolder = folder.toObject();
-    cleanedFolder.files = cleanedFolder.files || [];
+  const cleanedFolder = folder.toObject();
 
-    // Map files with contentId
-    cleanedFolder.files = cleanedFolder.files.map((file) => ({
-      file_id: file.file_id,
-      name: file.name,
-      contentId: file.contentId,
-    }));
+  // Safeguard: Ensure files is an array
+  cleanedFolder.files = cleanedFolder.files || [];
 
-    if (folder.children && folder.children.length > 0) {
-      const childFolders = await Folder.find({ _id: { $in: folder.children } })
-        .select("-__v")
-        .exec();
+  // Map files with contentId
+  cleanedFolder.files = cleanedFolder.files.map((file) => ({
+    file_id: file.file_id,
+    name: file.name,
+    contentId: file.contentId,
+  }));
 
-      cleanedFolder.children = await Promise.all(
-        childFolders.map(async (child) => await buildFolderTree(child))
-      );
-    } else {
-      cleanedFolder.children = [];
-    }
+  // Check if folder has children
+  if (folder.children && folder.children.length > 0) {
+    // Recursively fetch and populate child folders
+    const childFolders = await Folder.find({ _id: { $in: folder.children } })
+      .select("-__v")
+      .exec();
 
-    return cleanedFolder;
-  } catch (error) {
-    console.error("Error building folder tree:", error);
-    throw new Error("Failed to build folder tree");
+    // Recursively build the folder tree for each child
+    cleanedFolder.children = await Promise.all(
+      childFolders.map(async (child) => await buildFolderTree(child))
+    );
+  } else {
+    cleanedFolder.children = [];
   }
+
+  return cleanedFolder;
 };
 
-// Save folder structure
 exports.saveFolderStructure = async (req, res) => {
   try {
     const db = await connectToDb();
@@ -68,11 +67,11 @@ exports.saveFolderStructure = async (req, res) => {
     await Folder.deleteMany({});
     console.log("Deleted old folder structure");
 
-    // Save new folder structure
+    // Save the root folder structure
     const savedFolder = await saveFolderRecursive(req.body, db);
     console.log("Folder structure saved successfully");
 
-    res.status(201).json({
+    res.status(201).send({
       message: "Folder structure saved successfully!",
       folder: savedFolder,
     });
@@ -81,54 +80,49 @@ exports.saveFolderStructure = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-// Helper to save folder structure recursively
 const saveFolderRecursive = async (node, db) => {
-  try {
-    const bucket = new GridFSBucket(db);
+  const bucket = new GridFSBucket(db);
 
-    const files = await Promise.all(
-      (node.files || []).map(async (file) => {
-        let contentId = null;
+  // Handle files in the folder
+  const files = await Promise.all(
+    (node.files || []).map(async (file) => {
+      let contentId = null;
 
-        if (file.content) {
-          const uploadStream = bucket.openUploadStream(file.name);
-          uploadStream.end(Buffer.from(file.content, "utf-8"));
-          contentId = uploadStream.id;
-        }
-
-        return {
-          file_id: file.file_id,
-          name: file.name,
-        };
-      })
-    );
-
-    const folder = new Folder({
-      file_id: node.file_id,
-      name: node.name,
-      files,
-      children: [],
-    });
-
-    const savedFolder = await folder.save();
-
-    if (node.children && node.children.length > 0) {
-      for (const child of node.children) {
-        const savedChild = await saveFolderRecursive(child, db);
-        savedFolder.children.push(savedChild._id);
+      if (file.content) {
+        const uploadStream = bucket.openUploadStream(file.name);
+        uploadStream.end(Buffer.from(file.content, "utf-8"));
+        contentId = uploadStream.id;
       }
-      await savedFolder.save();
-    }
 
-    return savedFolder;
-  } catch (error) {
-    console.error("Error saving folder recursively:", error);
-    throw new Error("Failed to save folder recursively");
+      return {
+        file_id: file.file_id,
+        name: file.name,
+      };
+    })
+  );
+
+  // Create and save the folder
+  const folder = new Folder({
+    file_id: node.file_id,
+    name: node.name,
+    files: files,
+    children: [], // Initialize children as an empty array
+  });
+
+  const savedFolder = await folder.save();
+
+  // Recursively save child folders if they exist
+  if (node.children && node.children.length > 0) {
+    for (const child of node.children) {
+      const savedChild = await saveFolderRecursive(child, db);
+      savedFolder.children.push(savedChild._id); // Push child folder _id
+    }
+    await savedFolder.save(); // Save parent folder again with updated children
   }
+
+  return savedFolder; // Return the folder, including children _id references
 };
 
-// Update folder or file
 exports.updateFolderOrFile = async (req, res) => {
   try {
     const { file_id, name, content } = req.body;
@@ -163,7 +157,6 @@ exports.updateFolderOrFile = async (req, res) => {
   }
 };
 
-// Delete folder or file
 exports.deleteFolderOrFile = async (req, res) => {
   try {
     const { file_id } = req.params;
@@ -187,7 +180,7 @@ exports.deleteFolderOrFile = async (req, res) => {
   }
 };
 
-// Get table and column names
+// Getting tables and columns
 exports.getTableAndColumnNames = async (req, res) => {
   try {
     const dbName = req.params.dbName;
@@ -197,59 +190,32 @@ exports.getTableAndColumnNames = async (req, res) => {
     const result = await Promise.all(
       collections
         .filter(
-          (col) => !["folders", "fs.chunks", "fs.files"].includes(col.name)
+          (col) =>
+            col.name !== "folders" &&
+            col.name !== "fs.chunks" &&
+            col.name !== "fs.files"
         ) // Exclude "folders" collection
         .map(async (collection) => {
           const collectionInfo = await db.collection(collection.name).findOne();
-          const columns = collectionInfo
-            ? Object.keys(collectionInfo).filter(
-                (column) => !["_id", "InsertedDateTime"].includes(column)
-              )
-            : [];
-          return {
-            tableName: collection.name,
-            columns,
-          };
+          if (collectionInfo) {
+            const columns = Object.keys(collectionInfo).filter(
+              (column) => column !== "_id" && column !== "InsertedDateTime"
+            );
+            return {
+              tableName: collection.name,
+              columns: columns,
+            };
+          } else {
+            return {
+              tableName: collection.name,
+              columns: [],
+            };
+          }
         })
     );
 
-    res.status(200).json(result);
+    res.json(result);
   } catch (error) {
-    console.error("Error fetching table and column names:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-// Get column values by time interval
-exports.getColumnValuesByTimeInterval = async (req, res) => {
-  try {
-    const { dbName, collectionName, columns, startTime, endTime } = req.body;
-    const db = mongoose.connection.useDb(dbName);
-
-    const query = {
-      InsertedDateTime: {
-        $gte: new Date(startTime).toISOString(),
-        ...(endTime ? { $lte: new Date(endTime).toISOString() } : {}),
-      },
-    };
-
-    const projection = columns.reduce((proj, col) => ({ ...proj, [col]: 1 }), {
-      InsertedDateTime: 1,
-      _id: 0,
-    });
-
-    console.log("Query:", JSON.stringify(query));
-    console.log("Projection:", JSON.stringify(projection));
-
-    const result = await db
-      .collection(collectionName)
-      .find(query)
-      .project(projection)
-      .toArray();
-
-    res.status(200).json(result);
-  } catch (error) {
-    console.error("Error fetching column values:", error);
-    res.status(500).json({ message: "Internal server error" });
+    common.handleError(res, error);
   }
 };
