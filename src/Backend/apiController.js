@@ -221,6 +221,48 @@ exports.createFileOrFolder = async (req, res) => {
   }
 };
 
+// Update the name or contents of a file/sub-folder
+exports.updateFileOrFolder = async (req, res) => {
+  try {
+    const { file_id, name, content } = req.body;
+    const db = await connectToDb();
+    const bucket = new GridFSBucket(db);
+
+    // Find the file or folder
+    const folder = await Folder.findOne({ "files.file_id": file_id });
+
+    if (!folder) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    const file = folder.files.find((f) => f.file_id.toString() === file_id);
+
+    if (file) {
+      // Update file name and/or content
+      if (name) file.name = name;
+
+      if (content) {
+        if (file.contentId) {
+          // Delete old content from GridFS
+          await bucket.delete(mongoose.Types.ObjectId(file.contentId));
+        }
+
+        const uploadStream = bucket.openUploadStream(name || file.name);
+        uploadStream.end(Buffer.from(content, "utf-8"));
+        file.contentId = uploadStream.id;
+      }
+
+      await folder.save();
+      res.status(200).json({ message: "File updated successfully" });
+    } else {
+      res.status(404).json({ message: "File not found" });
+    }
+  } catch (error) {
+    console.error("Error updating file/folder:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 // Getting tables and columns
 exports.getTableAndColumnNames = async (req, res) => {
   try {
