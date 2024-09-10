@@ -169,6 +169,98 @@ exports.getFileContent = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Create a new file/sub-folder in an existing folder
+exports.createFileOrFolder = async (req, res) => {
+  try {
+    const { parent_id, name, isFile, content } = req.body;
+    const db = await connectToDb();
+    const bucket = new GridFSBucket(db);
+
+    // Find the parent folder
+    const parentFolder = await Folder.findOne({ file_id: parent_id });
+
+    if (!parentFolder) {
+      return res.status(404).json({ message: "Parent folder not found" });
+    }
+
+    let newItem;
+    if (isFile) {
+      let contentId = null;
+      if (content) {
+        const uploadStream = bucket.openUploadStream(name);
+        uploadStream.end(Buffer.from(content, "utf-8"));
+        contentId = uploadStream.id;
+      }
+
+      // Create the new file
+      newItem = { file_id: new mongoose.Types.ObjectId(), name, contentId };
+      parentFolder.files.push(newItem);
+    } else {
+      // Create the new sub-folder
+      newItem = new Folder({
+        file_id: new mongoose.Types.ObjectId(),
+        name,
+        files: [],
+        children: [],
+      });
+      await newItem.save();
+
+      // Add to the parent's children
+      parentFolder.children.push(newItem._id);
+    }
+
+    await parentFolder.save();
+    res.status(201).json({
+      message: `${isFile ? "File" : "Folder"} created successfully`,
+      item: newItem,
+    });
+  } catch (error) {
+    console.error("Error creating file/folder:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Getting tables and columns
+exports.getTableAndColumnNames = async (req, res) => {
+  try {
+    const dbName = req.params.dbName;
+    const db = mongoose.connection.useDb(dbName);
+    const collections = await db.db.listCollections().toArray();
+
+    const result = await Promise.all(
+      collections
+        .filter(
+          (col) =>
+            col.name !== "folders" &&
+            col.name !== "fs.chunks" &&
+            col.name !== "fs.files"
+        ) // Exclude "folders" collection
+        .map(async (collection) => {
+          const collectionInfo = await db.collection(collection.name).findOne();
+          if (collectionInfo) {
+            const columns = Object.keys(collectionInfo).filter(
+              (column) => column !== "_id" && column !== "InsertedDateTime"
+            );
+            return {
+              tableName: collection.name,
+              columns: columns,
+            };
+          } else {
+            return {
+              tableName: collection.name,
+              columns: [],
+            };
+          }
+        })
+    );
+
+    res.json(result);
+  } catch (error) {
+    common.handleError(res, error);
+  }
+};
+
 exports.getColumnValuesByTimeInterval = async (req, res) => {
   try {
     const { dbName, collectionName, columns, startTime, endTime } = req.body;
