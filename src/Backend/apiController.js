@@ -263,6 +263,35 @@ exports.updateFileOrFolder = async (req, res) => {
   }
 };
 
+// Delete a file/sub-folder
+exports.deleteFileOrFolder = async (req, res) => {
+  try {
+    const { file_id } = req.params;
+    const db = await connectToDb();
+    const bucket = new GridFSBucket(db);
+
+    // Find and delete file or folder
+    const folder = await Folder.findOneAndUpdate(
+      { "files.file_id": file_id },
+      { $pull: { files: { file_id } } }
+    );
+
+    if (folder) {
+      const file = folder.files.find((f) => f.file_id.toString() === file_id);
+      if (file && file.contentId) {
+        await bucket.delete(mongoose.Types.ObjectId(file.contentId));
+      }
+      await folder.save();
+      return res.status(200).json({ message: "File deleted successfully" });
+    } else {
+      res.status(404).json({ message: "File/Folder not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting file/folder:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 // Getting tables and columns
 exports.getTableAndColumnNames = async (req, res) => {
   try {
