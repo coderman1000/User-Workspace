@@ -9,13 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.2",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@monaco-editor/react": "^4.6.0",
     "@mui/icons-material": "^5.16.7",
     "@mui/lab": "^5.0.0-alpha.173",
     "@mui/material": "^5.16.7",
     "@mui/x-tree-view": "^7.15.0",
+    "@uiw/react-codemirror": "^4.23.1",
     "axios": "^1.7.5",
+    "codemirror": "^6.0.1",
     "dockview": "^1.16.1",
     "next": "14.2.5",
     "rc-dock": "^3.3.0",
@@ -24,6 +28,7 @@
     "react-dom": "^18",
     "react-mosaic-component": "^6.1.0",
     "react-resizable-panels": "^2.1.0",
+    "react-simple-code-editor": "^0.14.1",
     "react-toastify": "^10.0.5",
     "react-treebeard": "^3.2.4"
   },
