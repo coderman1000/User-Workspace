@@ -5,6 +5,8 @@ import TreeViewComponent from './TreeViewComponent';
 import { IconButton, Tooltip, Tabs, Tab, Box } from '@mui/material';
 import { ChevronLeft, ChevronRight, ExpandMore, ExpandLess } from '@mui/icons-material';
 import TableTreeView from './TableTreeView';
+import MonacoEditor from '@monaco-editor/react';
+
 const ResizablePanelsLayout = () => {
     const [leftPinned, setLeftPinned] = useState(true);
     const [rightPinned, setRightPinned] = useState(true);
@@ -12,10 +14,25 @@ const ResizablePanelsLayout = () => {
     const [centerBottomPinned, setCenterBottomPinned] = useState(true);
     const [selectedFileName, setSelectedFileName] = useState(null);  // State to hold the selected file name
     const [rightTab, setRightTab] = useState(0); // State to manage the selected tab
+    const [fileContent, setFileContent] = useState(''); // State for file content
 
-    const handleFileDoubleClick = (fileName) => {
-        setSelectedFileName(fileName);  // Set the selected file name
-        console.log('Double-clicked file:', fileName);  // Optionally log the selected file name
+
+    // Handle double-click on a file
+    const handleFileDoubleClick = async (fileId, fileName) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/getFileContent?file_id=${fileId}`);
+            const content = await response.text(); // Assuming the content is plain text
+            var contentData = JSON.parse(content);
+
+            console.log('File content:', contentData.content);
+            setFileContent(contentData.content);  // Set the file content to display in the editor
+
+            setSelectedFileName(fileName);  // Set the selected file name
+            console.log('Double-clicked file:', fileName);  // Optionally log the selected file name
+            // You can handle the file content (e.g., display it or open in a new tab)
+        } catch (error) {
+            console.error('Error fetching file content:', error);
+        }
     };
 
     const handleTabChange = (event, newValue) => {
