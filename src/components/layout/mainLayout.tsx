@@ -116,9 +116,20 @@ const ResizablePanelsLayout = () => {
             case 'center':
                 return (
                     <MosaicWindow title="Center Panel" path={['center']} draggable={false}>
-                        <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
-                            <h4>Center Panel</h4>
-                            <p>Main content area...</p>
+                        <div style={{ padding: '10px', height: '100%', background: '#e9ecef' }}>
+                            <h4>Editing: {selectedFileName || 'No file selected'}</h4>
+                            <MonacoEditor
+                                height="93%"
+                                defaultLanguage="javascript"
+                                value={fileContent}  // Display file content
+                                theme="vs-dark"
+                                options={{
+                                    readOnly: false, // Set to true if you want the editor to be read-only
+                                }}
+                                onChange={(newValue) => {
+                                    setFileContent(newValue); // Handle file content changes
+                                }}
+                            />
                         </div>
                     </MosaicWindow>
                 );
