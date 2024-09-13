@@ -244,7 +244,7 @@ exports.updateFileOrFolder = async (req, res) => {
       if (content) {
         if (file.contentId) {
           // Delete old content from GridFS
-          await bucket.delete(mongoose.Types.ObjectId(file.contentId));
+          await bucket.delete(new mongoose.Types.ObjectId(file.contentId));
         }
 
         const uploadStream = bucket.openUploadStream(name || file.name);
