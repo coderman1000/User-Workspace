@@ -266,7 +266,8 @@ exports.updateFileOrFolder = async (req, res) => {
 // Delete a file/sub-folder
 exports.deleteFileOrFolder = async (req, res) => {
   try {
-    const { file_id } = req.params;
+    const { file_id } = req.query;
+    console.log(file_id);
     const db = await connectToDb();
     const bucket = new GridFSBucket(db);
 
@@ -279,7 +280,7 @@ exports.deleteFileOrFolder = async (req, res) => {
     if (folder) {
       const file = folder.files.find((f) => f.file_id.toString() === file_id);
       if (file && file.contentId) {
-        await bucket.delete(mongoose.Types.ObjectId(file.contentId));
+        await bucket.delete(new mongoose.Types.ObjectId(file.contentId));
       }
       await folder.save();
       return res.status(200).json({ message: "File deleted successfully" });
