@@ -44,6 +44,22 @@ const ResizablePanelsLayout = () => {
         }
     };
 
+    const handleTabChange = (event, newFileId) => {
+        setActiveTab(newFileId);
+    };
+
+    const handleTabClose = (fileId) => {
+        setOpenFiles(prevFiles => prevFiles.filter(file => file.fileId !== fileId));
+
+        // If the closed tab was active, switch to another tab if available
+        if (activeTab === fileId && openFiles.length > 1) {
+            const nextFile = openFiles.find(file => file.fileId !== fileId);
+            setActiveTab(nextFile.fileId);
+        } else if (openFiles.length === 1) {
+            setActiveTab(null); // No tabs left
+        }
+    };
+
     const renderMosaicWindow = (id) => {
         switch (id) {
             case 'left':
@@ -122,7 +138,29 @@ const ResizablePanelsLayout = () => {
                 return (
                     <MosaicWindow title="Center Panel" path={['center']} draggable={false}>
                         <div style={{ padding: '10px', height: '100%', background: '#e9ecef' }}>
-
+                            <Tabs value={activeTab} onChange={handleTabChange}>
+                                {openFiles.map((file) => (
+                                    <Tab
+                                        key={file.fileId}
+                                        label={
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                {file.fileName}
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleTabClose(file.fileId);
+                                                    }}
+                                                    style={{ marginLeft: 5 }}
+                                                >
+                                                    <Close fontSize="small" />
+                                                </IconButton>
+                                            </div>
+                                        }
+                                        value={file.fileId}
+                                    />
+                                ))}
+                            </Tabs>
 
                             {openFiles.map((file) => (
                                 <div key={file.fileId} style={{ display: activeTab === file.fileId ? 'block' : 'none', height: '93%' }}>
