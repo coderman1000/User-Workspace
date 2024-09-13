@@ -3,40 +3,45 @@ import { Mosaic, MosaicWindow } from 'react-mosaic-component';
 import 'react-mosaic-component/react-mosaic-component.css';
 import TreeViewComponent from './TreeViewComponent';
 import { IconButton, Tooltip, Tabs, Tab, Box } from '@mui/material';
-import { ChevronLeft, ChevronRight, ExpandMore, ExpandLess } from '@mui/icons-material';
-import TableTreeView from './TableTreeView';
+import { ChevronLeft, ChevronRight, ExpandMore, ExpandLess, Close } from '@mui/icons-material';
 import MonacoEditor from '@monaco-editor/react';
+import TableTreeView from './TableTreeView';
+
 
 const ResizablePanelsLayout = () => {
     const [leftPinned, setLeftPinned] = useState(true);
     const [rightPinned, setRightPinned] = useState(true);
     const [leftBottomPinned, setLeftBottomPinned] = useState(true);
     const [centerBottomPinned, setCenterBottomPinned] = useState(true);
-    const [selectedFileName, setSelectedFileName] = useState(null);  // State to hold the selected file name
+    const [openFiles, setOpenFiles] = useState([]);  // State to track open files (tabs)
+    const [activeTab, setActiveTab] = useState(null); // Track active tab (selected file)
     const [rightTab, setRightTab] = useState(0); // State to manage the selected tab
-    const [fileContent, setFileContent] = useState(''); // State for file content
-
 
     // Handle double-click on a file
     const handleFileDoubleClick = async (fileId, fileName) => {
         try {
+            // Fetch file content
             const response = await fetch(`http://localhost:5000/api/getFileContent?file_id=${fileId}`);
             const content = await response.text(); // Assuming the content is plain text
-            var contentData = JSON.parse(content);
+            const contentData = JSON.parse(content);
 
             console.log('File content:', contentData.content);
-            setFileContent(contentData.content);  // Set the file content to display in the editor
 
-            setSelectedFileName(fileName);  // Set the selected file name
-            console.log('Double-clicked file:', fileName);  // Optionally log the selected file name
-            // You can handle the file content (e.g., display it or open in a new tab)
+            // Check if the file is already open
+            if (!openFiles.some(file => file.fileId === fileId)) {
+                // Add the new file as a new tab
+                setOpenFiles(prevFiles => [
+                    ...prevFiles,
+                    { fileId, fileName, content: contentData.content }
+                ]);
+            }
+
+            // Set the newly opened file as the active tab
+            setActiveTab(fileId);
+
         } catch (error) {
             console.error('Error fetching file content:', error);
         }
-    };
-
-    const handleTabChange = (event, newValue) => {
-        setRightTab(newValue);
     };
 
     const renderMosaicWindow = (id) => {
@@ -117,19 +122,31 @@ const ResizablePanelsLayout = () => {
                 return (
                     <MosaicWindow title="Center Panel" path={['center']} draggable={false}>
                         <div style={{ padding: '10px', height: '100%', background: '#e9ecef' }}>
-                            <h4>Editing: {selectedFileName || 'No file selected'}</h4>
-                            <MonacoEditor
-                                height="93%"
-                                defaultLanguage="javascript"
-                                value={fileContent}  // Display file content
-                                theme="vs-dark"
-                                options={{
-                                    readOnly: false, // Set to true if you want the editor to be read-only
-                                }}
-                                onChange={(newValue) => {
-                                    setFileContent(newValue); // Handle file content changes
-                                }}
-                            />
+
+
+                            {openFiles.map((file) => (
+                                <div key={file.fileId} style={{ display: activeTab === file.fileId ? 'block' : 'none', height: '93%' }}>
+                                    <MonacoEditor
+                                        height="93%"
+                                        defaultLanguage="javascript"
+                                        value={file.content}
+                                        theme="vs-dark"
+                                        options={{ readOnly: false }}
+                                        onChange={(newValue) => {
+                                            // Update the file content in the state
+                                            setOpenFiles(prevFiles =>
+                                                prevFiles.map(f => f.fileId === file.fileId ? { ...f, content: newValue } : f)
+                                            );
+                                        }}
+                                    />
+                                </div>
+                            ))}
+
+                            {openFiles.length === 0 && (
+                                <div>
+                                    <h4>No file selected</h4>
+                                </div>
+                            )}
                         </div>
                     </MosaicWindow>
                 );
@@ -137,7 +154,6 @@ const ResizablePanelsLayout = () => {
                 return null;
         }
     };
-
 
     const mosaicStructure = useMemo(() => {
         let layout;

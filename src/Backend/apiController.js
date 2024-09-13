@@ -225,6 +225,7 @@ exports.createFileOrFolder = async (req, res) => {
 exports.updateFileOrFolder = async (req, res) => {
   try {
     const { file_id, name, content } = req.body;
+    console.log(file_id);
     const db = await connectToDb();
     const bucket = new GridFSBucket(db);
 
