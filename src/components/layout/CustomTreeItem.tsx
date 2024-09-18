@@ -5,6 +5,7 @@ import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInBrowserIcon from "@mui/icons-material/OpenInBrowser";
+import EditIcon from "@mui/icons-material/Edit"; // Added icon for rename
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -27,16 +28,24 @@ const CustomTreeItem = ({
 
   const handleRename = () => {
     if (newName.trim()) {
+      // Prepare the payload for the API call
+      const payload = {
+        file_id: node.fileId, // Assuming `node.fileId` holds the file or folder ID
+        name: newName,
+      };
+
+      // If it's a file, include content in the API call, otherwise omit for folders
+      if (!Array.isArray(node.children)) {
+        payload.content = "This is the content of this File. updated from somewhere else";
+      }
+
       // Make the API call to update the file or folder
       fetch('http://localhost:5000/api/updateFileOrFolder', {
-        method: 'POST',
+        method: 'put',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          file_id: node.fileId, // Assuming `node.fileId` holds the file or folder ID
-          name: newName,
-          content: "This is the content of this File. updated from somewhere else"
-        })
+        body: JSON.stringify(payload),
       });
+
       onRenameItem(node.id, newName);
     } else {
       onDeleteItem(node.id); // Delete the node if the name is empty
@@ -46,7 +55,7 @@ const CustomTreeItem = ({
 
   const handleDelete = () => {
     fetch(`http://localhost:5000/api/deleteFileOrFolder?file_id=${node.fileId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
     });
     onDeleteItem(node.id);
   };
@@ -145,7 +154,7 @@ const CustomTreeItem = ({
               className="custom-context-menu-item"
               onClick={() => setIsRenaming(true)}
             >
-              Rename
+              <EditIcon sx={{ color: "#2196F3", marginRight: 1 }} /> Rename
             </MenuItem>
           </>
         ) : (
@@ -167,7 +176,7 @@ const CustomTreeItem = ({
               className="custom-context-menu-item"
               onClick={() => setIsRenaming(true)}
             >
-              Rename
+              <EditIcon sx={{ color: "#2196F3", marginRight: 1 }} /> Rename
             </MenuItem>
           </>
         )}
