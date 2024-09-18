@@ -27,11 +27,33 @@ const CustomTreeItem = ({
 
   const handleRename = () => {
     if (newName.trim()) {
+      // Make the API call to update the file or folder
+      fetch('http://localhost:5000/api/updateFileOrFolder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          file_id: node.fileId, // Assuming `node.fileId` holds the file or folder ID
+          name: newName,
+          content: "This is the content of this File. updated from somewhere else"
+        })
+      });
       onRenameItem(node.id, newName);
     } else {
       onDeleteItem(node.id); // Delete the node if the name is empty
     }
     setIsRenaming(false);
+  };
+
+  const handleDelete = () => {
+    fetch(`http://localhost:5000/api/deleteFileOrFolder?file_id=${node.fileId}`, {
+      method: 'DELETE'
+    });
+    onDeleteItem(node.id);
+  };
+
+  const handleOpen = () => {
+    // Trigger the double click action when "Open" is clicked
+    onFileDoubleClick(node.fileId, node.name);
   };
 
   const handleKeyPress = (e) => {
