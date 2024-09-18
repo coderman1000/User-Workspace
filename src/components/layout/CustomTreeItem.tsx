@@ -58,7 +58,15 @@ const CustomTreeItem = ({
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={handleKeyPress}
               onBlur={handleBlur}
-              style={{ border: "1px solid #ccc", borderRadius: "4px", padding: "4px", width: "80%", fontSize: "14px", outline: "none", boxShadow: "0 0 2px rgba(0, 0, 0, 0.2)" }}
+              style={{
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                padding: "4px",
+                width: "80%",
+                fontSize: "14px",
+                outline: "none",
+                boxShadow: "0 0 2px rgba(0, 0, 0, 0.2)",
+              }}
               autoFocus
             />
           ) : (
@@ -106,26 +114,38 @@ const CustomTreeItem = ({
             </MenuItem>
             <MenuItem
               className="custom-context-menu-item"
-              onClick={() => onDeleteItem(node.id)}
+              onClick={handleDelete}
             >
               <DeleteIcon sx={{ color: "#F44336", marginRight: 1 }} /> Delete
               Folder and Contents
+            </MenuItem>
+            <MenuItem
+              className="custom-context-menu-item"
+              onClick={() => setIsRenaming(true)}
+            >
+              Rename
             </MenuItem>
           </>
         ) : (
           <>
             <MenuItem
               className="custom-context-menu-item"
-              onClick={() => console.log(`Open ${node.name}`)}
+              onClick={handleOpen}
             >
               <OpenInBrowserIcon sx={{ color: "#3F51B5", marginRight: 1 }} />{" "}
               Open
             </MenuItem>
             <MenuItem
               className="custom-context-menu-item"
-              onClick={() => onDeleteItem(node.id)}
+              onClick={handleDelete}
             >
               <DeleteIcon sx={{ color: "#F44336", marginRight: 1 }} /> Delete
+            </MenuItem>
+            <MenuItem
+              className="custom-context-menu-item"
+              onClick={() => setIsRenaming(true)}
+            >
+              Rename
             </MenuItem>
           </>
         )}
