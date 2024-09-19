@@ -215,6 +215,21 @@ const CustomTreeItem = ({
         </ContextMenu>
       </ContextMenuTrigger>
 
+      <Snackbar
+        open={showToaster}
+        autoHideDuration={3000}
+        onClose={() => setShowToaster(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        style={{ zIndex: 9999 }} // Ensure it's in the foreground
+      >
+        <Alert
+          onClose={() => setShowToaster(false)}
+          severity={isError ? "error" : "success"}
+          sx={{ width: '100%' }}
+        >
+          {toasterMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
