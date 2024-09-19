@@ -225,12 +225,23 @@ exports.createFileOrFolder = async (req, res) => {
 exports.updateFileOrFolder = async (req, res) => {
   try {
     const { file_id, name, content } = req.body;
-    console.log(file_id);
     const db = await connectToDb();
     const bucket = new GridFSBucket(db);
 
-    // Find the file or folder
-    const folder = await Folder.findOne({ "files.file_id": file_id });
+    // Check if it's a folder first
+    let folder = await Folder.findOne({ file_id });
+
+    if (folder) {
+      // Update folder name if provided
+      if (name) {
+        folder.name = name;
+        await folder.save();
+        return res.status(200).json({ message: "Folder updated successfully" });
+      }
+    }
+
+    // If not a folder, check for a file within the folder
+    folder = await Folder.findOne({ "files.file_id": file_id });
 
     if (!folder) {
       return res.status(404).json({ message: "Item not found" });
@@ -254,13 +265,13 @@ exports.updateFileOrFolder = async (req, res) => {
       }
 
       await folder.save();
-      res.status(200).json({ message: "File updated successfully" });
+      return res.status(200).json({ message: "File updated successfully" });
     } else {
-      res.status(404).json({ message: "File not found" });
+      return res.status(404).json({ message: "File not found" });
     }
   } catch (error) {
     console.error("Error updating file/folder:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
