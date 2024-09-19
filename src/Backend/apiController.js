@@ -274,8 +274,7 @@ exports.updateFileOrFolder = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
-// Delete a file/sub-folder
+// Delete a file/sub-folder or folder
 exports.deleteFileOrFolder = async (req, res) => {
   try {
     const { file_id } = req.query;
@@ -283,8 +282,19 @@ exports.deleteFileOrFolder = async (req, res) => {
     const db = await connectToDb();
     const bucket = new GridFSBucket(db);
 
-    // Find and delete file or folder
-    const folder = await Folder.findOneAndUpdate(
+    // Check if the item is a folder
+    let folder = await Folder.findOne({ file_id });
+
+    if (folder) {
+      // Delete folder and all its contents (files and subfolders)
+      await deleteFolderAndContents(folder, bucket);
+      return res
+        .status(200)
+        .json({ message: "Folder and its contents deleted successfully" });
+    }
+
+    // If it's not a folder, check for a file within a folder
+    folder = await Folder.findOneAndUpdate(
       { "files.file_id": file_id },
       { $pull: { files: { file_id } } }
     );
@@ -297,13 +307,32 @@ exports.deleteFileOrFolder = async (req, res) => {
       await folder.save();
       return res.status(200).json({ message: "File deleted successfully" });
     } else {
-      res.status(404).json({ message: "File/Folder not found" });
+      return res.status(404).json({ message: "File/Folder not found" });
     }
   } catch (error) {
     console.error("Error deleting file/folder:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Helper function to recursively delete folder and its contents
+async function deleteFolderAndContents(folder, bucket) {
+  // Delete all files within the folder
+  for (const file of folder.files) {
+    if (file.contentId) {
+      await bucket.delete(new mongoose.Types.ObjectId(file.contentId));
+    }
+  }
+
+  // Optionally, handle subfolders if nested folder structure exists (recursion)
+  // Assuming folder.subfolders holds nested folder objects
+  for (const subfolder of folder.subfolders || []) {
+    await deleteFolderAndContents(subfolder, bucket);
+  }
+
+  // Delete the folder itself
+  await Folder.deleteOne({ file_id: folder.file_id });
+}
 
 // Getting tables and columns
 exports.getTableAndColumnNames = async (req, res) => {
