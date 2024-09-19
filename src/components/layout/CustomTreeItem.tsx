@@ -8,23 +8,7 @@ import OpenInBrowserIcon from "@mui/icons-material/OpenInBrowser";
 import EditIcon from "@mui/icons-material/Edit"; // Icon for rename
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import React, { useState, useEffect, useRef } from 'react';
-
-// Example Toaster Component (you can replace it with any toaster library like 'react-toastify')
-const Toaster = ({ message, show, isError }) => (
-  show ? (
-    <div
-      style={{
-        padding: '10px',
-        backgroundColor: isError ? 'red' : 'green',
-        color: 'white',
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px'
-      }}>
-      {message}
-    </div>
-  ) : null
-);
+import { Snackbar, Alert } from '@mui/material';
 
 const CustomTreeItem = ({
   node,
@@ -51,7 +35,6 @@ const CustomTreeItem = ({
     setToasterMessage(message);
     setIsError(error);
     setShowToaster(true);
-    setTimeout(() => setShowToaster(false), 3000); // Hide toaster after 3 seconds
   };
 
   const handleRename = async () => {
@@ -232,7 +215,6 @@ const CustomTreeItem = ({
         </ContextMenu>
       </ContextMenuTrigger>
 
-      <Toaster message={toasterMessage} show={showToaster} isError={isError} />
     </>
   );
 };
