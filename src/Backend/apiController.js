@@ -173,7 +173,7 @@ exports.getFileContent = async (req, res) => {
 // Create a new file/sub-folder in an existing folder
 exports.createFileOrFolder = async (req, res) => {
   try {
-    const { parent_id, name, isFile, content } = req.body;
+    const { parent_id, name, isFile, content, file_id } = req.body;
     const db = await connectToDb();
     const bucket = new GridFSBucket(db);
 
@@ -194,12 +194,12 @@ exports.createFileOrFolder = async (req, res) => {
       }
 
       // Create the new file
-      newItem = { file_id: new mongoose.Types.ObjectId(), name, contentId };
+      newItem = { file_id: file_id, name, contentId };
       parentFolder.files.push(newItem);
     } else {
       // Create the new sub-folder
       newItem = new Folder({
-        file_id: new mongoose.Types.ObjectId(),
+        file_id: file_id,
         name,
         files: [],
         children: [],
