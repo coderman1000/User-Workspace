@@ -5,10 +5,11 @@ import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInBrowserIcon from "@mui/icons-material/OpenInBrowser";
-import EditIcon from "@mui/icons-material/Edit"; // Icon for rename
+import EditIcon from "@mui/icons-material/Edit";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import React, { useState, useEffect, useRef } from 'react';
 import { Snackbar, Alert } from '@mui/material';
+import { v4 as uuidv4 } from 'uuid'; // Import UUID
 
 const CustomTreeItem = ({
   node,
@@ -40,32 +41,39 @@ const CustomTreeItem = ({
   const handleRename = async () => {
     if (newName.trim()) {
       const payload = {
-        file_id: node.fileId, // Assuming `node.fileId` holds the file or folder ID
+        file_id: node.fileId || uuidv4(), // Use existing fileId or generate new one
         name: newName,
+        parent_id: node.parentId, // Send parent_id in the payload
       };
 
       // If it's a file, add content. Skip for folders.
       if (!Array.isArray(node.children)) {
-        payload.content = "This is the content of this File. updated from somewhere else";
+        payload.content = "This is the content of this File. Updated from somewhere else.";
+        payload.isFile = true;
+
       }
 
-      // Make the API call to update the file or folder
+      const url = node.isNew
+        ? 'http://localhost:5000/api/createFileOrFolder'
+        : 'http://localhost:5000/api/updateFileOrFolder';
+
+      // Make the API call to create or update the file or folder
       try {
-        const response = await fetch('http://localhost:5000/api/updateFileOrFolder', {
-          method: 'put',
+        const response = await fetch(url, {
+          method: node.isNew ? 'POST' : 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
 
-        // Check the status code for success
         if (response.ok) {
-          onRenameItem(node.id, newName); // Proceed with renaming if success
-          displayToaster("Renamed successfully!", false); // Show success message
+          const message = node.isNew ? "Created successfully!" : "Renamed successfully!";
+          onRenameItem(node.id, newName); // Proceed with renaming or creation
+          displayToaster(message, false); // Show success message
         } else {
-          displayToaster("Error renaming folder. Please try again.", true); // Show error if not successful
+          displayToaster("Error processing request. Please try again.", true); // Show error if not successful
         }
       } catch (error) {
-        displayToaster("Error renaming folder. Please try again.", true);
+        displayToaster("Error processing request. Please try again.", true);
       }
     } else {
       onDeleteItem(node.id); // Delete the node if the name is empty
@@ -79,9 +87,8 @@ const CustomTreeItem = ({
         method: 'DELETE',
       });
 
-      // Check the status code for success
       if (response.ok) {
-        onDeleteItem(node.id); // Proceed with deletion if success
+        onDeleteItem(node.id); // Proceed with deletion if successful
         displayToaster("Deleted successfully!", false); // Show success message
       } else {
         displayToaster("Error deleting folder. Please try again.", true); // Show error if not successful
@@ -92,12 +99,11 @@ const CustomTreeItem = ({
   };
 
   const handleOpen = () => {
-    // Trigger the double click action when "Open" is clicked
     onFileDoubleClick(node.fileId, node.name);
   };
 
   const handleKeyPress = (e) => {
-    e.stopPropagation(); // Prevents keypress from affecting tree navigation
+    e.stopPropagation();
     if (e.key === "Enter") handleRename();
   };
 
