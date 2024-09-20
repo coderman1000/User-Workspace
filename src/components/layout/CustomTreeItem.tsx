@@ -52,6 +52,10 @@ const CustomTreeItem = ({
         payload.isFile = true;
 
       }
+      else { //folder
+        payload.isFile = false;
+      }
+
 
       const url = node.isNew
         ? 'http://localhost:5000/api/createFileOrFolder'
