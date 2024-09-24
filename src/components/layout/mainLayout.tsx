@@ -375,4 +375,44 @@ const ResizablePanelsLayout = () => {
     );
 };
 
+const styles = {
+    panelContainer: {
+        padding: '15px',
+        background: '#f4f5f7',
+        borderRadius: '8px',
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+        height: '100%',
+    },
+    flexColumnContainer: {
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    editorContainer: {
+        padding: '10px',
+        height: '100%',
+        backgroundColor: '#fff',
+        borderRadius: '8px',
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+    },
+    tabLabel: {
+        display: 'flex',
+        alignItems: 'center',
+    },
+    tabCloseButton: {
+        marginLeft: '8px',
+    },
+    noFileSelected: {
+        padding: '20px',
+        textAlign: 'center',
+    },
+    fixedButton: {
+        position: 'fixed',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        zIndex: 1000,
+        backgroundColor: '#fff',
+        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+    },
+};
 export default ResizablePanelsLayout;
