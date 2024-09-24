@@ -7,7 +7,6 @@ import { ChevronLeft, ChevronRight, ExpandMore, ExpandLess, Close } from '@mui/i
 import MonacoEditor from '@monaco-editor/react';
 import TableTreeView from './TableTreeView';
 
-
 const ResizablePanelsLayout = () => {
     const [leftPinned, setLeftPinned] = useState(true);
     const [rightPinned, setRightPinned] = useState(true);
@@ -60,6 +59,10 @@ const ResizablePanelsLayout = () => {
         }
     };
 
+    const handleRightTabChange = (event, newTab) => {
+        setRightTab(newTab);
+    };
+
     const renderMosaicWindow = (id) => {
         switch (id) {
             case 'left':
@@ -92,7 +95,7 @@ const ResizablePanelsLayout = () => {
                         }
                     >
                         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                            <Tabs value={rightTab} onChange={handleTabChange} indicatorColor="primary" textColor="primary">
+                            <Tabs value={rightTab} onChange={handleRightTabChange} indicatorColor="primary" textColor="primary">
                                 <Tab label="Tab 1" />
                                 <Tab label="Tab 2" />
                             </Tabs>
@@ -109,7 +112,6 @@ const ResizablePanelsLayout = () => {
                         draggable={false}
                         title="Left Bottom Panel"
                         path={['leftBottom']}
-
                     >
                         <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
                             <TableTreeView />
