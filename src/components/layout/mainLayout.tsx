@@ -77,7 +77,7 @@ const ResizablePanelsLayout = () => {
                             </IconButton>
                         }
                     >
-                        <div style={{ padding: '10px', background: '#e9ecef', height: '100%' }}>
+                        <div style={styles.panelContainer}>
                             <TreeViewComponent onFileDoubleClick={handleFileDoubleClick} />
                         </div>
                     </MosaicWindow>
@@ -94,7 +94,7 @@ const ResizablePanelsLayout = () => {
                             </IconButton>
                         }
                     >
-                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <div style={styles.flexColumnContainer}>
                             <Tabs value={rightTab} onChange={handleRightTabChange} indicatorColor="primary" textColor="primary">
                                 <Tab label="Tab 1" />
                                 <Tab label="Tab 2" />
@@ -139,13 +139,13 @@ const ResizablePanelsLayout = () => {
             case 'center':
                 return (
                     <MosaicWindow title="Center Panel" path={['center']} draggable={false}>
-                        <div style={{ padding: '10px', height: '100%', background: '#e9ecef' }}>
+                        <div style={styles.editorContainer}>
                             <Tabs value={activeTab} onChange={handleTabChange}>
                                 {openFiles.map((file) => (
                                     <Tab
                                         key={file.fileId}
                                         label={
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <div style={styles.tabLabel}>
                                                 {file.fileName}
                                                 <IconButton
                                                     size="small"
@@ -153,7 +153,7 @@ const ResizablePanelsLayout = () => {
                                                         e.stopPropagation();
                                                         handleTabClose(file.fileId);
                                                     }}
-                                                    style={{ marginLeft: 5 }}
+                                                    style={styles.tabCloseButton}
                                                 >
                                                     <Close fontSize="small" />
                                                 </IconButton>
