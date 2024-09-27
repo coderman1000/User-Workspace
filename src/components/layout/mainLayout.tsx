@@ -116,7 +116,8 @@ const ResizablePanelsLayout = () => {
         switch (id) {
             case 'left':
                 return (
-                    <MosaicWindow
+                    <MosaicWindow theme="light"
+
                         draggable={false}
                         title="Left Panel"
                         path={['left']}
@@ -133,7 +134,8 @@ const ResizablePanelsLayout = () => {
                 );
             case 'right':
                 return (
-                    <MosaicWindow
+                    <MosaicWindow theme="light"
+
                         draggable={false}
                         title="Right Panel"
                         path={['right']}
@@ -171,6 +173,8 @@ const ResizablePanelsLayout = () => {
                 return (
                     <MosaicWindow
                         draggable={false}
+                        theme="light"
+
                         title="Center Bottom Panel"
                         path={['centerBottom']}
                         additionalControls={
