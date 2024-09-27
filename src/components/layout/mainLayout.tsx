@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { Mosaic, MosaicWindow } from 'react-mosaic-component';
 import 'react-mosaic-component/react-mosaic-component.css';
 import TreeViewComponent from './TreeViewComponent';
-import { IconButton, Tooltip, Tabs, Tab, Box } from '@mui/material';
+import { IconButton, Tooltip, Tabs, Tab, Box, Select, MenuItem } from '@mui/material';
 import { ChevronLeft, ChevronRight, ExpandMore, ExpandLess, Close } from '@mui/icons-material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import MonacoEditor from '@monaco-editor/react';
 import TableTreeView from './TableTreeView';
 
@@ -12,30 +13,27 @@ const ResizablePanelsLayout = () => {
     const [rightPinned, setRightPinned] = useState(true);
     const [leftBottomPinned, setLeftBottomPinned] = useState(true);
     const [centerBottomPinned, setCenterBottomPinned] = useState(true);
-    const [openFiles, setOpenFiles] = useState([]);  // State to track open files (tabs)
+    const [openFiles, setOpenFiles] = useState([]); // Track open files (tabs)
     const [activeTab, setActiveTab] = useState(null); // Track active tab (selected file)
-    const [rightTab, setRightTab] = useState(0); // State to manage the selected tab
+    const [rightTab, setRightTab] = useState(0); // Manage the selected tab
+    const [theme, setTheme] = useState('light'); // State to manage current theme
 
     // Handle double-click on a file
     const handleFileDoubleClick = async (fileId, fileName) => {
         try {
-            // Fetch file content
             const response = await fetch(`http://localhost:5000/api/getFileContent?file_id=${fileId}`);
-            const content = await response.text(); // Assuming the content is plain text
+            const content = await response.text();
             const contentData = JSON.parse(content);
 
             console.log('File content:', contentData.content);
 
-            // Check if the file is already open
             if (!openFiles.some(file => file.fileId === fileId)) {
-                // Add the new file as a new tab
                 setOpenFiles(prevFiles => [
                     ...prevFiles,
                     { fileId, fileName, content: contentData.content }
                 ]);
             }
 
-            // Set the newly opened file as the active tab
             setActiveTab(fileId);
 
         } catch (error) {
@@ -50,7 +48,6 @@ const ResizablePanelsLayout = () => {
     const handleTabClose = (fileId) => {
         setOpenFiles(prevFiles => prevFiles.filter(file => file.fileId !== fileId));
 
-        // If the closed tab was active, switch to another tab if available
         if (activeTab === fileId && openFiles.length > 1) {
             const nextFile = openFiles.find(file => file.fileId !== fileId);
             setActiveTab(nextFile.fileId);
@@ -170,7 +167,7 @@ const ResizablePanelsLayout = () => {
                                         height="93%"
                                         defaultLanguage="javascript"
                                         value={file.content}
-                                        theme="vs-dark"
+                                        theme="light"
                                         options={{ readOnly: false }}
                                         onChange={(newValue) => {
                                             // Update the file content in the state
@@ -184,7 +181,7 @@ const ResizablePanelsLayout = () => {
 
                             {openFiles.length === 0 && (
                                 <div>
-                                    <h4>No file selected</h4>
+                                    <h4>No file selected </h4>
                                 </div>
                             )}
                         </div>
@@ -295,83 +292,98 @@ const ResizablePanelsLayout = () => {
         return layout;
     }, [leftPinned, rightPinned, leftBottomPinned, centerBottomPinned]);
 
-    return (
-        <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
-            <Mosaic renderTile={renderMosaicWindow} initialValue={mosaicStructure} />
 
-            {!leftPinned && (
-                <Tooltip title="Show Left Panel" placement="right">
-                    <IconButton
-                        onClick={() => setLeftPinned(true)}
-                        style={{
-                            position: 'fixed',
-                            top: '50%',
-                            left: 10,
-                            transform: 'translateY(-50%)',
-                            backgroundColor: '#ffffff',
-                            boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
-                            zIndex: 1000,
-                        }}
-                    >
-                        <ChevronRight />
-                    </IconButton>
-                </Tooltip>
-            )}
-            {!rightPinned && (
-                <Tooltip title="Show Right Panel" placement="left">
-                    <IconButton
-                        onClick={() => setRightPinned(true)}
-                        style={{
-                            position: 'fixed',
-                            top: '50%',
-                            right: 10,
-                            transform: 'translateY(-50%)',
-                            backgroundColor: '#ffffff',
-                            boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
-                            zIndex: 1000,
-                        }}
-                    >
-                        <ChevronLeft />
-                    </IconButton>
-                </Tooltip>
-            )}
-            {!leftBottomPinned && (
-                <Tooltip title="Show Left Bottom Panel" placement="top">
-                    <IconButton
-                        onClick={() => setLeftBottomPinned(true)}
-                        style={{
-                            position: 'fixed',
-                            bottom: 10,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            backgroundColor: '#ffffff',
-                            boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
-                            zIndex: 1000,
-                        }}
-                    >
-                        <ExpandLess />
-                    </IconButton>
-                </Tooltip>
-            )}
-            {!centerBottomPinned && (
-                <Tooltip title="Show Center Bottom Panel" placement="top">
-                    <IconButton
-                        onClick={() => setCenterBottomPinned(true)}
-                        style={{
-                            position: 'fixed',
-                            bottom: 10,
-                            right: '50%',
-                            transform: 'translateX(50%)',
-                            backgroundColor: '#ffffff',
-                            boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
-                            zIndex: 1000,
-                        }}
-                    >
-                        <ExpandLess />
-                    </IconButton>
-                </Tooltip>
-            )}
-        </div>
+    return (
+        <ThemeProvider theme={themes[theme]}>
+            <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
+                <Select
+                    value={theme}
+                    onChange={(e) => setTheme(e.target.value)}
+                    style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000 }}
+                >
+                    <MenuItem value="light">Light</MenuItem>
+                    <MenuItem value="dark">Dark</MenuItem>
+                    <MenuItem value="blue">Blue</MenuItem>
+                    <MenuItem value="green">Green</MenuItem>
+                </Select>
+
+                <Mosaic renderTile={renderMosaicWindow} initialValue={mosaicStructure} />
+
+
+                {!leftPinned && (
+                    <Tooltip title="Show Left Panel" placement="right">
+                        <IconButton
+                            onClick={() => setLeftPinned(true)}
+                            style={{
+                                position: 'fixed',
+                                top: '50%',
+                                left: 10,
+                                transform: 'translateY(-50%)',
+                                backgroundColor: '#ffffff',
+                                boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+                                zIndex: 1000,
+                            }}
+                        >
+                            <ChevronRight />
+                        </IconButton>
+                    </Tooltip>
+                )}
+                {!rightPinned && (
+                    <Tooltip title="Show Right Panel" placement="left">
+                        <IconButton
+                            onClick={() => setRightPinned(true)}
+                            style={{
+                                position: 'fixed',
+                                top: '50%',
+                                right: 10,
+                                transform: 'translateY(-50%)',
+                                backgroundColor: '#ffffff',
+                                boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+                                zIndex: 1000,
+                            }}
+                        >
+                            <ChevronLeft />
+                        </IconButton>
+                    </Tooltip>
+                )}
+                {!leftBottomPinned && (
+                    <Tooltip title="Show Left Bottom Panel" placement="top">
+                        <IconButton
+                            onClick={() => setLeftBottomPinned(true)}
+                            style={{
+                                position: 'fixed',
+                                bottom: 10,
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                backgroundColor: '#ffffff',
+                                boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+                                zIndex: 1000,
+                            }}
+                        >
+                            <ExpandLess />
+                        </IconButton>
+                    </Tooltip>
+                )}
+                {!centerBottomPinned && (
+                    <Tooltip title="Show Center Bottom Panel" placement="top">
+                        <IconButton
+                            onClick={() => setCenterBottomPinned(true)}
+                            style={{
+                                position: 'fixed',
+                                bottom: 10,
+                                right: '50%',
+                                transform: 'translateX(50%)',
+                                backgroundColor: '#ffffff',
+                                boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+                                zIndex: 1000,
+                            }}
+                        >
+                            <ExpandLess />
+                        </IconButton>
+                    </Tooltip>
+                )}
+            </div>
+        </ThemeProvider>
     );
 };
 
