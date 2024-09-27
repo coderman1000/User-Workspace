@@ -8,6 +8,58 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import MonacoEditor from '@monaco-editor/react';
 import TableTreeView from './TableTreeView';
 
+// Define multiple themes
+const themes = {
+    light: createTheme({
+        palette: {
+            mode: 'light',
+            primary: {
+                main: '#1976d2',
+            },
+            background: {
+                default: '#f4f5f7',
+                paper: '#fff',
+            },
+        },
+    }),
+    dark: createTheme({
+        palette: {
+            mode: 'dark',
+            primary: {
+                main: '#bb86fc',
+            },
+            background: {
+                default: '#121212',
+                paper: '#1d1d1d',
+            },
+        },
+    }),
+    blue: createTheme({
+        palette: {
+            mode: 'light',
+            primary: {
+                main: '#2196f3',
+            },
+            background: {
+                default: '#e3f2fd',
+                paper: '#bbdefb',
+            },
+        },
+    }),
+    green: createTheme({
+        palette: {
+            mode: 'light',
+            primary: {
+                main: '#4caf50',
+            },
+            background: {
+                default: '#e8f5e9',
+                paper: '#c8e6c9',
+            },
+        },
+    }),
+};
+
 const ResizablePanelsLayout = () => {
     const [leftPinned, setLeftPinned] = useState(true);
     const [rightPinned, setRightPinned] = useState(true);
