@@ -9,6 +9,7 @@ import MonacoEditor from '@monaco-editor/react';
 import TableTreeView from './TableTreeView';
 
 // Define multiple themes
+// Define multiple themes with more properties
 const themes = {
     light: createTheme({
         palette: {
@@ -16,9 +17,25 @@ const themes = {
             primary: {
                 main: '#1976d2',
             },
+            secondary: {
+                main: '#ff4081',
+            },
             background: {
                 default: '#f4f5f7',
                 paper: '#fff',
+            },
+            text: {
+                primary: '#000',
+                secondary: '#555',
+            },
+        },
+        typography: {
+            fontSize: 14,
+            h1: {
+                fontSize: '2rem',
+            },
+            body1: {
+                fontSize: '1rem',
             },
         },
     }),
@@ -28,9 +45,25 @@ const themes = {
             primary: {
                 main: '#bb86fc',
             },
+            secondary: {
+                main: '#03dac6',
+            },
             background: {
                 default: '#121212',
                 paper: '#1d1d1d',
+            },
+            text: {
+                primary: '#fff',
+                secondary: '#ccc',
+            },
+        },
+        typography: {
+            fontSize: 14,
+            h1: {
+                fontSize: '2rem',
+            },
+            body1: {
+                fontSize: '1rem',
             },
         },
     }),
@@ -40,10 +73,29 @@ const themes = {
             primary: {
                 main: '#2196f3',
             },
+            secondary: {
+                main: '#f50057',
+            },
             background: {
                 default: '#e3f2fd',
                 paper: '#bbdefb',
             },
+            text: {
+                primary: '#0d47a1',
+                secondary: '#1976d2',
+            },
+        },
+        typography: {
+            fontSize: 16,
+            h1: {
+                fontSize: '2.2rem',
+            },
+            body1: {
+                fontSize: '1.1rem',
+            },
+        },
+        shape: {
+            borderRadius: 8,
         },
     }),
     green: createTheme({
@@ -52,13 +104,64 @@ const themes = {
             primary: {
                 main: '#4caf50',
             },
+            secondary: {
+                main: '#ffeb3b',
+            },
             background: {
                 default: '#e8f5e9',
                 paper: '#c8e6c9',
             },
+            text: {
+                primary: '#2e7d32',
+                secondary: '#388e3c',
+            },
+        },
+        typography: {
+            fontSize: 16,
+            h1: {
+                fontSize: '2.2rem',
+            },
+            body1: {
+                fontSize: '1.1rem',
+            },
+        },
+        shape: {
+            borderRadius: 8,
+        },
+    }),
+    purple: createTheme({
+        palette: {
+            mode: 'light',
+            primary: {
+                main: '#9c27b0',
+            },
+            secondary: {
+                main: '#e91e63',
+            },
+            background: {
+                default: '#f3e5f5',
+                paper: '#f8bbd0',
+            },
+            text: {
+                primary: '#6a1b9a',
+                secondary: '#ad1457',
+            },
+        },
+        typography: {
+            fontSize: 16,
+            h1: {
+                fontSize: '2.2rem',
+            },
+            body1: {
+                fontSize: '1.1rem',
+            },
+        },
+        shape: {
+            borderRadius: 12,
         },
     }),
 };
+
 
 const ResizablePanelsLayout = () => {
     const [leftPinned, setLeftPinned] = useState(true);
@@ -111,7 +214,7 @@ const ResizablePanelsLayout = () => {
     const handleRightTabChange = (event, newTab) => {
         setRightTab(newTab);
     };
-
+    File
     const renderMosaicWindow = (id) => {
         switch (id) {
             case 'left':
@@ -361,6 +464,7 @@ const ResizablePanelsLayout = () => {
                     <MenuItem value="dark">Dark</MenuItem>
                     <MenuItem value="blue">Blue</MenuItem>
                     <MenuItem value="green">Green</MenuItem>
+                    <MenuItem value="purple">Purple</MenuItem>
                 </Select>
 
                 <Mosaic renderTile={renderMosaicWindow} initialValue={mosaicStructure} />
