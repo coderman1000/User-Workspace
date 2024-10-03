@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, ExpandMore, ExpandLess, Close } from '@mui/i
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import MonacoEditor from '@monaco-editor/react';
 import TableTreeView from './TableTreeView';
-
+import IconButtonsPanel from './IconButtonsPanel'
 // Define multiple themes
 // Define multiple themes with more properties
 const themes = {
@@ -250,11 +250,13 @@ const ResizablePanelsLayout = () => {
                     >
                         <div style={styles.flexColumnContainer}>
                             <Tabs value={rightTab} onChange={handleRightTabChange} indicatorColor="primary" textColor="primary">
-                                <Tab label="Tab 1" />
+                                <Tab label="Tab 1" >
+                                </Tab>
                                 <Tab label="Tab 2" />
                             </Tabs>
                             <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-                                {rightTab === 0 && <div style={{ padding: '10px', height: '100%' }}>Content for Tab 1</div>}
+                                {rightTab === 0 && <div style={{ padding: '10px', height: '100%' }}>                                    <IconButtonsPanel />
+                                </div>}
                                 {rightTab === 1 && <div style={{ padding: '10px', height: '100%' }}>Content for Tab 2</div>}
                             </Box>
                         </div>
